@@ -667,10 +667,12 @@ function handleQRData(raw) {
   }
 
   if (amount > 0 && amount <= 500000) {
-    document.getElementById('qr-amount').value = amount;
-    calcQR();
     Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-    alert('Сумма: ' + amount + ' ₽\nОтправьте /start pay_' + Math.round(amount) + ' в боте для оплаты');
+    const botUrl = 'https://t.me/' + BOT_USERNAME + '?start=pay_' + Math.round(amount);
+    if (Telegram.WebApp.initDataUnsafe?.start_param) {
+      Telegram.WebApp.close();
+    }
+    window.location.href = botUrl;
   } else {
     Telegram.WebApp.HapticFeedback.notificationOccurred('error');
     alert('Не удалось распознать сумму из QR-кода:\n' + trimmed);
