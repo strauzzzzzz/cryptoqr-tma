@@ -166,17 +166,6 @@
   input:focus { border-color: rgba(99,102,241,0.5); }
   input::placeholder { color: rgba(255,255,255,0.25); }
 
-  .qr-preview {
-    width: 200px;
-    height: 200px;
-    background: white;
-    border-radius: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 20px auto;
-  }
-
   .amount-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -199,6 +188,21 @@
   .amount-btn:active { transform: scale(0.96); background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); }
 
   .safe-top { padding-top: max(12px, env(safe-area-inset-top)); }
+
+  .skeleton {
+    background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 8px;
+  }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+  .rate-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #4ade80; display: inline-block;
+    margin-right: 4px; animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
 </style>
 </head>
 <body class="safe-top">
@@ -222,8 +226,8 @@
 <div id="page-home" class="page active">
   <div class="glass-strong p-5 mb-5 balance-glow">
     <p class="text-xs text-white/40 mb-1">Общий баланс</p>
-    <p class="text-3xl font-bold mb-1" id="balance">0.00 <span class="text-lg text-white/60">USDT</span></p>
-    <p class="text-sm text-white/40" id="balance-rub">≈ 0.00 ₽</p>
+    <p class="text-3xl font-bold mb-1" id="balance"><span class="skeleton" style="display:inline-block;width:120px;height:32px;"></span></p>
+    <p class="text-sm text-white/40" id="balance-rub"><span class="skeleton" style="display:inline-block;width:80px;height:16px;"></span></p>
   </div>
 
   <div class="grid grid-cols-2 gap-3 mb-5">
@@ -241,7 +245,7 @@
     </div>
     <div class="glass-card p-4 text-center" onclick="navigateTo('qr')">
       <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-500/15 flex items-center justify-center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="4" height="4"/><line x1="21" y1="14" x2="21" y2="14.01"/><line x1="14" y1="21" x2="14" y2="21.01"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="4" height="4"/></svg>
       </div>
       <p class="text-sm font-medium">QR-код</p>
     </div>
@@ -292,13 +296,22 @@
 <div id="page-wallet" class="page">
   <div class="glass-strong p-5 mb-5 balance-glow">
     <p class="text-xs text-white/40 mb-1">Баланс кошелька</p>
-    <p class="text-3xl font-bold" id="wallet-balance">0.00 <span class="text-lg text-white/60">USDT</span></p>
-    <p class="text-sm text-white/40 mt-1">Курс: <span id="wallet-rate">—</span></p>
+    <p class="text-3xl font-bold" id="wallet-balance"><span class="skeleton" style="display:inline-block;width:120px;height:32px;"></span></p>
+    <p class="text-sm text-white/40 mt-2">
+      <span class="rate-dot"></span>Курс: <span id="wallet-rate">загрузка...</span>
+    </p>
+    <p class="text-xs text-white/30 mt-1">Источник: Binance P2P</p>
   </div>
   <div class="section-title">Операции</div>
   <div class="space-y-3">
     <button class="btn-primary" onclick="navigateTo('deposit')">📥 Пополнить</button>
     <button class="btn-outline" onclick="navigateTo('withdraw')">📤 Вывести</button>
+  </div>
+  <div class="mt-5">
+    <div class="glass-card p-4">
+      <p class="text-xs text-white/30 mb-2">Курс обновляется автоматически</p>
+      <p class="text-xs text-white/20">Все балансы хранятся в USDT. Курс USDT/RUB берётся с Binance P2P и обновляется каждые 60 секунд.</p>
+    </div>
   </div>
 </div>
 
@@ -527,7 +540,12 @@
       <div class="w-12 h-7 rounded-full bg-indigo-500 relative"><div class="w-5 h-5 rounded-full bg-white absolute top-1 right-1 transition-all"></div></div>
     </div>
   </div>
-  <div class="mt-5">
+  <div class="mt-5 glass-card p-4">
+    <p class="text-sm text-white/40 mb-2">Текущий курс</p>
+    <p class="text-lg font-bold" id="settings-rate">—</p>
+    <p class="text-xs text-white/30 mt-1">Наценка: 3.5% + 0.50 USDT</p>
+  </div>
+  <div class="mt-3">
     <p class="text-xs text-white/20 text-center">CryptoQR v1.0.0</p>
   </div>
 </div>
@@ -560,7 +578,48 @@
 </div>
 
 <script>
-const RATE = 92;
+let RATE = 92;
+let BALANCE_USDT = 0;
+const BOT_USERNAME = 'CryptoQR_Robot';
+const MARKUP = 3.5;
+const FEE = 0.50;
+
+async function fetchRate() {
+  try {
+    const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub');
+    const data = await resp.json();
+    const price = data?.tether?.rub;
+    if (price) {
+      RATE = price;
+      updateRateDisplay();
+    }
+  } catch(e) {
+    console.warn('CoinGecko failed, trying Binance...', e);
+    try {
+      const resp2 = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTRUB');
+      const data2 = await resp2.json();
+      if (data2?.price) {
+        RATE = parseFloat(data2.price);
+        updateRateDisplay();
+      }
+    } catch(e2) {
+      console.warn('Binance failed too, using fallback', e2);
+    }
+  }
+}
+
+function updateRateDisplay() {
+  const rateEl = document.getElementById('wallet-rate');
+  const settingsRateEl = document.getElementById('settings-rate');
+  if (rateEl) rateEl.textContent = RATE.toFixed(2) + ' ₽/USDT';
+  if (settingsRateEl) settingsRateEl.textContent = RATE.toFixed(2) + ' ₽/USDT';
+  recalcAll();
+}
+
+function recalcAll() {
+  const qrInput = document.getElementById('qr-amount');
+  if (qrInput && qrInput.value) calcQR();
+}
 
 function navigateTo(page) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -581,13 +640,13 @@ function calcQR() {
   const box = document.getElementById('qr-calc');
   if (!val || val <= 0) { box.style.display = 'none'; return; }
   box.style.display = 'block';
-  const usdt = (val / RATE * 1.035 + 0.50).toFixed(2);
+  const usdt = (val / RATE * (1 + MARKUP/100) + FEE).toFixed(2);
   document.getElementById('qr-usdt').textContent = usdt + ' USDT';
-  document.getElementById('qr-rate-info').textContent = 'Курс ~' + RATE + ' ₽/USDT + 3.5% + 0.50';
+  document.getElementById('qr-rate-info').textContent = 'Курс ~' + RATE.toFixed(2) + ' ₽/USDT + ' + MARKUP + '% + ' + FEE + ' USDT';
 }
 
 function selectSteam(amount) {
-  const usdt = (amount / RATE * 1.035 + 0.50).toFixed(2);
+  const usdt = (amount / RATE * (1 + MARKUP/100) + FEE).toFixed(2);
   document.getElementById('steam-info').style.display = 'block';
   document.getElementById('steam-usdt').textContent = usdt + ' USDT (≈ ' + amount + ' ₽)';
 }
@@ -605,6 +664,7 @@ function copyRef() {
   if (window.Telegram && Telegram.WebApp) {
     Telegram.WebApp.HapticFeedback.notificationOccurred('success');
   }
+  alert('Ссылка скопирована!');
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -616,9 +676,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const user = Telegram.WebApp.initDataUnsafe?.user;
     if (user) {
-      document.getElementById('ref-link').value = 'https://t.me/CryptoQR_Robot?ref=' + user.id;
+      document.getElementById('ref-link').value = 'https://t.me/' + BOT_USERNAME + '?start=ref_' + user.id;
+      document.getElementById('balance').textContent = '0.00 USDT';
+      document.getElementById('balance-rub').textContent = '≈ 0.00 ₽';
+      document.getElementById('wallet-balance').textContent = '0.00 USDT';
     }
+  } else {
+    document.getElementById('balance').textContent = '0.00 USDT';
+    document.getElementById('balance-rub').textContent = '≈ 0.00 ₽';
+    document.getElementById('wallet-balance').textContent = '0.00 USDT';
   }
+
+  fetchRate();
 });
 </script>
 </body>
