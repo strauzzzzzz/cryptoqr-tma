@@ -9,223 +9,295 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Inter',-apple-system,sans-serif;background:#06060f;color:#fff;min-height:100vh;overflow-x:hidden;padding-bottom:80px}
+body{font-family:'Inter',-apple-system,sans-serif;background:#06060f;color:#fff;min-height:100vh;overflow-x:hidden;padding-bottom:90px}
 .safe{padding-top:max(12px,env(safe-area-inset-top))}
 
-.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:16px}
-.card:active{transform:scale(0.98);background:rgba(255,255,255,0.07)}
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:16px;transition:all .15s}
+.card:active{transform:scale(0.97);background:rgba(255,255,255,0.07)}
 
 .balance-card{
   background:linear-gradient(135deg,#1c1048 0%,#12083a 50%,#0a0520 100%);
-  border:1px solid rgba(139,92,246,0.2);
-  border-radius:20px;padding:20px;position:relative;overflow:hidden;
+  border:1px solid rgba(139,92,246,0.2);border-radius:20px;padding:22px;position:relative;overflow:hidden;
 }
-.balance-card::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(139,92,246,0.15),transparent);border-radius:50%}
+.balance-card::before{content:'';position:absolute;top:-60px;right:-60px;width:160px;height:160px;background:radial-gradient(circle,rgba(139,92,246,0.12),transparent);border-radius:50%}
+.balance-card::after{content:'';position:absolute;bottom:-40px;left:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(59,130,246,0.08),transparent);border-radius:50%}
 
-.btn{border:none;border-radius:14px;padding:15px;color:#fff;font-weight:600;font-size:15px;width:100%;cursor:pointer;transition:all .15s}
+.btn{border:none;border-radius:14px;padding:15px;color:#fff;font-weight:600;font-size:15px;width:100%;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
 .btn:active{transform:scale(0.97)}
 .btn-violet{background:linear-gradient(135deg,#7c3aed,#6d28d9)}
-.btn-ghost{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)}
+.btn-violet::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);opacity:0;transition:.2s}
+.btn-ghost{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)}
 .btn-green{background:linear-gradient(135deg,#059669,#047857)}
 .btn-red{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#f87171}
 
-.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,6,15,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.05);padding:6px 0;padding-bottom:max(6px,env(safe-area-inset-bottom));z-index:100}
-.nav-i{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;cursor:pointer;opacity:0.35;transition:.2s}
-.nav-i.on{opacity:1}
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,6,15,0.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.05);padding:6px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));z-index:100}
+.nav-inner{display:flex;justify-around;max-width:500px;margin:0 auto}
+.nav-i{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;cursor:pointer;opacity:0.3;transition:.2s;border-radius:12px}
+.nav-i.on{opacity:1;background:rgba(124,58,237,0.1)}
 .nav-i svg{width:22px;height:22px}
 .nav-i span{font-size:10px;font-weight:500}
 
-.page{display:none;padding:16px}.page.on{display:block;animation:fadeIn .2s}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.page{display:none;padding:16px}.page.on{display:block;animation:fadeIn .25s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;color:#fff;font-size:15px;width:100%;outline:none}
+input[type="number"],input[type="text"]{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;color:#fff;font-size:15px;width:100%;outline:none;transition:border-color .2s}
 input:focus{border-color:rgba(124,58,237,0.5)}
 input::placeholder{color:rgba(255,255,255,0.2)}
 
-.stripe{height:1px;background:rgba(255,255,255,0.06);margin:16px 0}
-
-.pay-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.pay-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
 .pay-overlay.show{display:flex}
-.pay-sheet{background:#0f0f24;border-radius:24px 24px 0 0;padding:24px 20px 32px;width:100%;max-width:500px;animation:slideUp .3s}
+.pay-sheet{background:linear-gradient(180deg,#111128,#0a0a1a);border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;max-width:500px;animation:slideUp .3s ease;border-top:1px solid rgba(255,255,255,0.06)}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
 
-.loader{width:48px;height:48px;border:3px solid rgba(255,255,255,0.1);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+.loader{width:48px;height:48px;border:3px solid rgba(255,255,255,0.08);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.check-anim{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:popIn .4s}
-@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+.check-anim{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 0 40px rgba(16,185,129,0.3)}
+@keyframes popIn{from{transform:scale(0) rotate(-10deg)}to{transform:scale(1) rotate(0)}}
+
+.err-anim{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#ef4444);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 0 40px rgba(239,68,68,0.3)}
 
 .tag{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600}
 .tag-green{background:rgba(16,185,129,0.15);color:#34d399}
 .tag-red{background:rgba(239,68,68,0.15);color:#f87171}
+
+.service-item{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background .15s}
+.service-item:active{background:rgba(255,255,255,0.03)}
+.service-item+.service-item{border-top:1px solid rgba(255,255,255,0.04)}
+
+.amount-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.amount-btn{padding:14px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#fff;font-weight:600;font-size:14px;cursor:pointer;transition:all .15s;text-align:center}
+.amount-btn:active{transform:scale(0.95);background:rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.3)}
+
+.qr-frame{width:200px;height:200px;border-radius:16px;border:2px dashed rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;background:rgba(255,255,255,0.02);cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.qr-frame:active{border-color:rgba(124,58,237,0.4);background:rgba(124,58,237,0.05)}
+.qr-frame svg{width:48px;height:48px;opacity:0.3}
+.qr-frame.scanning{border-color:rgba(124,58,237,0.4);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,0.2)}50%{box-shadow:0 0 0 12px rgba(124,58,237,0)}}
+
+.rate-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.05);font-size:11px;color:rgba(255,255,255,0.4);font-weight:500}
+.rate-dot{width:6px;height:6px;border-radius:50%;background:#34d399;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
 </style>
 </head>
 <body class="safe">
 
 <!-- HOME -->
 <div id="p-home" class="page on">
-  <div class="balance-card mb-5">
-    <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px">Баланс</p>
-    <p id="bal" style="font-size:32px;font-weight:700">—</p>
-    <p id="bal-rub" style="font-size:13px;color:rgba(255,255,255,0.35);margin-top:4px">—</p>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div>
+      <p style="font-size:11px;color:rgba(255,255,255,0.35)">Баланс</p>
+      <p id="bal" style="font-size:28px;font-weight:700;margin-top:2px">—</p>
+    </div>
+    <div class="rate-badge"><span class="rate-dot"></span><span id="rate-top">загрузка...</span></div>
   </div>
 
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
     <div class="card" style="padding:16px;text-align:center;cursor:pointer" onclick="go('deposit')">
-      <div style="width:40px;height:40px;border-radius:12px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px">📥</div>
+      <div style="width:42px;height:42px;border-radius:12px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px">📥</div>
       <p style="font-size:13px;font-weight:600">Пополнить</p>
+      <p style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:2px">CryptoBot, USDT</p>
     </div>
     <div class="card" style="padding:16px;text-align:center;cursor:pointer" onclick="go('withdraw')">
-      <div style="width:40px;height:40px;border-radius:12px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px">📤</div>
+      <div style="width:42px;height:42px;border-radius:12px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px">📤</div>
       <p style="font-size:13px;font-weight:600">Вывести</p>
+      <p style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:2px">USDT TRC20</p>
     </div>
   </div>
 
-  <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-left:4px">Услуги</div>
+  <p style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-left:4px">Услуги</p>
   <div class="card" style="overflow:hidden">
-    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04)" onclick="go('steam')">
-      <span style="font-size:20px">🎮</span>
-      <div style="flex:1"><p style="font-size:14px;font-weight:500">Steam</p><p style="font-size:11px;color:rgba(255,255,255,0.3)">Пополнение баланса</p></div>
-      <span style="color:rgba(255,255,255,0.15)">›</span>
+    <div class="service-item" onclick="go('qr')">
+      <span style="font-size:22px">💳</span>
+      <div style="flex:1"><p style="font-size:14px;font-weight:500">Оплата по QR</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Сканируй и оплати в магазине</p></div>
+      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
     </div>
-    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer" onclick="go('mobile')">
-      <span style="font-size:20px">📱</span>
-      <div style="flex:1"><p style="font-size:14px;font-weight:500">Мобильная связь</p><p style="font-size:11px;color:rgba(255,255,255,0.3)">Пополнение телефона</p></div>
-      <span style="color:rgba(255,255,255,0.15)">›</span>
+    <div class="service-item" onclick="go('steam')">
+      <span style="font-size:22px">🎮</span>
+      <div style="flex:1"><p style="font-size:14px;font-weight:500">Steam</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Пополнение баланса</p></div>
+      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
+    </div>
+    <div class="service-item" onclick="go('mobile')">
+      <span style="font-size:22px">📱</span>
+      <div style="flex:1"><p style="font-size:14px;font-weight:500">Мобильная связь</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Пополнение телефона</p></div>
+      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
     </div>
   </div>
 </div>
 
 <!-- WALLET -->
 <div id="p-wallet" class="page">
-  <div class="balance-card mb-5">
+  <div class="balance-card" style="margin-bottom:16px">
     <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px">Баланс кошелька</p>
-    <p id="w-bal" style="font-size:32px;font-weight:700">—</p>
-    <p id="w-rate" style="font-size:13px;color:rgba(255,255,255,0.35);margin-top:4px">—</p>
+    <p id="w-bal" style="font-size:30px;font-weight:700">—</p>
+    <p id="w-rate" style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:6px">—</p>
   </div>
   <button class="btn btn-green" style="margin-bottom:10px" onclick="go('deposit')">📥 Пополнить</button>
-  <button class="btn btn-ghost" onclick="go('withdraw')">📤 Вывести</button>
-  <button class="btn btn-ghost" style="margin-top:10px" onclick="loadUser()">🔄 Обновить</button>
+  <button class="btn btn-ghost" style="margin-bottom:10px" onclick="go('withdraw')">📤 Вывести</button>
+  <button class="btn btn-ghost" onclick="sendAction('get_balance')">🔄 Обновить баланс</button>
 </div>
 
 <!-- DEPOSIT -->
 <div id="p-deposit" class="page">
   <p style="font-size:20px;font-weight:700;margin-bottom:4px">Пополнение</p>
-  <p style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px">Выберите способ</p>
+  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:16px">Выберите способ пополнения</p>
   <div style="display:flex;flex-direction:column;gap:10px">
-    <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer"><span style="font-size:24px">🤖</span><div><p style="font-weight:600">CryptoBot</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">USDT, BTC, TON</p></div></div>
-    <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer"><span style="font-size:24px">🚀</span><div><p style="font-weight:600">xRocket</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">USDT, TON</p></div></div>
-    <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer"><span style="font-size:24px">🔗</span><div><p style="font-weight:600">USDT TRC20</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">Прямой перевод</p></div></div>
-    <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer"><span style="font-size:24px">🔗</span><div><p style="font-weight:600">USDT BEP20</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">Прямой перевод</p></div></div>
+    <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="sendAction('deposit_cryptobot')">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:22px">🤖</div>
+      <div style="flex:1"><p style="font-weight:600">CryptoBot</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">USDT, BTC, TON, ETH</p></div>
+      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
+    </div>
+    <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="sendAction('deposit_xrocket')">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(124,58,237,0.12);display:flex;align-items:center;justify-content:center;font-size:22px">🚀</div>
+      <div style="flex:1"><p style="font-weight:600">xRocket Pay</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">USDT, TON</p></div>
+      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
+    </div>
+    <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="sendAction('deposit_trc20')">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;font-size:22px">🔗</div>
+      <div style="flex:1"><p style="font-weight:600">USDT TRC20</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">Прямой перевод</p></div>
+      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
+    </div>
+    <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="sendAction('deposit_bep20')">
+      <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;font-size:22px">🔗</div>
+      <div style="flex:1"><p style="font-weight:600">USDT BEP20</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">Прямой перевод</p></div>
+      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
+    </div>
   </div>
 </div>
 
 <!-- WITHDRAW -->
 <div id="p-withdraw" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:16px">Вывод</p>
+  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Вывод USDT</p>
+  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:16px">Минимум 5 USDT, комиссия 1 USDT</p>
   <div style="display:flex;flex-direction:column;gap:12px">
-    <input type="text" id="w-addr" placeholder="Адрес кошелька (USDT)">
+    <input type="text" id="w-addr" placeholder="Адрес кошелька (USDT TRC20)">
     <input type="number" id="w-amt" placeholder="Сумма USDT" step="0.01" min="5">
-    <button class="btn btn-violet" onclick="alert('Вывод: '+document.getElementById('w-amt').value+' USDT')">Вывести</button>
+    <button class="btn btn-violet" onclick="sendWithdraw()">📤 Вывести</button>
   </div>
 </div>
 
 <!-- QR PAY -->
 <div id="p-qr" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Оплата</p>
-  <p style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px">Сумма чека в рублях</p>
-  <input type="number" id="qr-amt" placeholder="350" step="1" min="1" oninput="calcPay()">
-  <div id="qr-calc" style="display:none;margin-top:12px;padding:16px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:14px;text-align:center">
-    <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:4px">К оплате</p>
-    <p id="qr-usdt" style="font-size:28px;font-weight:700">0 USDT</p>
-    <p id="qr-info" style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:4px"></p>
+  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Оплата по QR</p>
+  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:20px">Введи сумму чека или сканируй QR</p>
+
+  <div class="qr-frame" id="qr-scan" onclick="scanQR()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+      <rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/>
+    </svg>
   </div>
-  <button class="btn btn-violet" style="margin-top:12px" id="qr-pay-btn" onclick="doPay()">Оплатить</button>
+  <p id="qr-scan-hint" style="text-align:center;font-size:12px;color:rgba(255,255,255,0.2);margin-bottom:20px">Нажми чтобы сканировать QR</p>
+
+  <div style="text-align:center;font-size:12px;color:rgba(255,255,255,0.2);margin-bottom:12px">— или введи вручную —</div>
+
+  <input type="number" id="qr-amt" placeholder="Сумма чека в ₽" step="1" min="1" oninput="calcPay()">
+
+  <div id="qr-calc" style="display:none;margin-top:14px;padding:18px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.15);border-radius:16px;text-align:center">
+    <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px">К списанию с баланса</p>
+    <p id="qr-usdt" style="font-size:32px;font-weight:700;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent">0 USDT</p>
+    <div style="display:flex;justify-content:center;gap:12px;margin-top:8px">
+      <span style="font-size:11px;color:rgba(255,255,255,0.25)" id="qr-rate-info"></span>
+    </div>
+  </div>
+  <button class="btn btn-violet" style="margin-top:14px;display:none" id="qr-pay-btn" onclick="doPay()">💳 Оплатить</button>
 </div>
 
 <!-- STEAM -->
 <div id="p-steam" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:16px">Пополнение Steam</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-    <button class="btn btn-ghost" onclick="pickSteam(100)">100 ₽</button>
-    <button class="btn btn-ghost" onclick="pickSteam(300)">300 ₽</button>
-    <button class="btn btn-ghost" onclick="pickSteam(500)">500 ₽</button>
-    <button class="btn btn-ghost" onclick="pickSteam(1000)">1000 ₽</button>
-    <button class="btn btn-ghost" onclick="pickSteam(2000)">2000 ₽</button>
-    <button class="btn btn-ghost" onclick="pickSteam(5000)">5000 ₽</button>
+  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Пополнение Steam</p>
+  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:16px">Выбери сумму пополнения</p>
+  <div class="amount-grid" style="margin-bottom:14px">
+    <button class="amount-btn" onclick="pickSteam(this,100)">100 ₽</button>
+    <button class="amount-btn" onclick="pickSteam(this,300)">300 ₽</button>
+    <button class="amount-btn" onclick="pickSteam(this,500)">500 ₽</button>
+    <button class="amount-btn" onclick="pickSteam(this,1000)">1 000 ₽</button>
+    <button class="amount-btn" onclick="pickSteam(this,2000)">2 000 ₽</button>
+    <button class="amount-btn" onclick="pickSteam(this,5000)">5 000 ₽</button>
   </div>
-  <div id="steam-info" style="display:none;padding:12px;margin-bottom:12px" class="card"><p style="font-size:12px;color:rgba(255,255,255,0.4)">К оплате</p><p id="steam-usdt" style="font-size:18px;font-weight:700"></p></div>
-  <input type="text" id="steam-id" placeholder="Steam ID">
-  <button class="btn btn-violet" style="margin-top:12px" onclick="alert('Пополнение Steam')">Пополнить</button>
+  <input type="number" id="steam-custom" placeholder="Своя сумма ₽" step="1" min="50" oninput="pickSteamCustom()" style="margin-bottom:10px">
+  <input type="text" id="steam-id" placeholder="Steam ID (64)" style="margin-bottom:10px">
+  <div id="steam-info" style="display:none;padding:14px;margin-bottom:14px" class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:13px;color:rgba(255,255,255,0.4)">К оплате</span>
+      <span id="steam-usdt" style="font-size:18px;font-weight:700;color:#a78bfa"></span>
+    </div>
+  </div>
+  <button class="btn btn-violet" onclick="sendSteam()">🎮 Пополнить</button>
 </div>
 
 <!-- MOBILE -->
 <div id="p-mobile" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:16px">Мобильная связь</p>
-  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
-    <button class="btn btn-ghost" onclick="pickOp(this)">📱 МТС</button>
-    <button class="btn btn-ghost" onclick="pickOp(this)">📱 МегаФон</button>
-    <button class="btn btn-ghost" onclick="pickOp(this)">📱 Билайн</button>
-    <button class="btn btn-ghost" onclick="pickOp(this)">📱 Теле2</button>
+  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Мобильная связь</p>
+  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:16px">Пополнение телефона</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px" id="op-grid">
+    <button class="amount-btn" onclick="pickOp(this,'МТС')" style="font-size:13px">📱 МТС</button>
+    <button class="amount-btn" onclick="pickOp(this,'МегаФон')" style="font-size:13px">📱 МегаФон</button>
+    <button class="amount-btn" onclick="pickOp(this,'Билайн')" style="font-size:13px">📱 Билайн</button>
+    <button class="amount-btn" onclick="pickOp(this,'Теле2')" style="font-size:13px">📱 Теле2</button>
   </div>
   <input type="text" id="mob-phone" placeholder="Номер телефона" style="margin-bottom:10px">
-  <input type="number" id="mob-amt" placeholder="Сумма в ₽ (10–15000)" min="10" max="15000">
-  <button class="btn btn-violet" style="margin-top:12px" onclick="alert('Пополнение связи')">Пополнить</button>
+  <input type="number" id="mob-amt" placeholder="Сумма в ₽ (10–15000)" min="10" max="15000" style="margin-bottom:14px">
+  <button class="btn btn-violet" onclick="sendMobile()">📱 Пополнить</button>
 </div>
 
 <!-- HISTORY -->
 <div id="p-history" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:16px">История</p>
-  <div class="card" style="overflow:hidden">
-    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.04)">
-      <span style="font-size:18px">📥</span>
-      <div style="flex:1"><p style="font-size:13px;font-weight:500">Пополнение</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Сегодня 10:00</p></div>
-      <div style="text-align:right"><p style="font-size:13px;font-weight:600;color:#34d399">+50.00</p><span class="tag tag-green">OK</span></div>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px">
-      <span style="font-size:18px">💳</span>
-      <div style="flex:1"><p style="font-size:13px;font-weight:500">Оплата QR</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Сегодня 14:32</p></div>
-      <div style="text-align:right"><p style="font-size:13px;font-weight:600;color:#f87171">-3.75</p><span class="tag tag-green">OK</span></div>
-    </div>
-  </div>
+  <p style="font-size:20px;font-weight:700;margin-bottom:16px">История операций</p>
+  <p style="font-size:13px;color:rgba(255,255,255,0.3)">Загрузка...</p>
+  <button class="btn btn-ghost" style="margin-top:12px" onclick="sendAction('get_history')">🔄 Загрузить историю</button>
 </div>
 
 <!-- PAY OVERLAY -->
 <div class="pay-overlay" id="pay-overlay">
   <div class="pay-sheet">
-    <div style="width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 20px"></div>
+    <div style="width:40px;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;margin:0 auto 20px"></div>
 
-    <!-- Loading -->
     <div id="pay-loading" style="display:none;text-align:center;padding:24px 0">
       <div class="loader"></div>
-      <p style="margin-top:12px;color:rgba(255,255,255,0.5);font-size:14px">Обработка оплаты...</p>
+      <p style="margin-top:16px;color:rgba(255,255,255,0.5);font-size:14px">Отправка запроса...</p>
     </div>
 
-    <!-- Confirm -->
     <div id="pay-confirm">
-      <p style="font-size:16px;font-weight:600;margin-bottom:16px;text-align:center">Подтвердите оплату</p>
-      <div style="padding:16px;border-radius:14px;background:rgba(255,255,255,0.03);margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:rgba(255,255,255,0.4);font-size:13px">Сумма</span><span id="po-rub" style="font-weight:600;font-size:13px"></span></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:rgba(255,255,255,0.4);font-size:13px">К оплате</span><span id="po-usdt" style="font-weight:700;color:#a78bfa;font-size:15px"></span></div>
-        <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,0.4);font-size:13px">Баланс после</span><span id="po-after" style="font-size:13px"></span></div>
+      <p style="font-size:17px;font-weight:600;margin-bottom:20px;text-align:center">Подтверди оплату</p>
+      <div style="padding:16px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);margin-bottom:20px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+          <span style="color:rgba(255,255,255,0.35);font-size:13px">Сумма чека</span>
+          <span id="po-rub" style="font-weight:600;font-size:14px"></span>
+        </div>
+        <div style="height:1px;background:rgba(255,255,255,0.04);margin-bottom:10px"></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+          <span style="color:rgba(255,255,255,0.35);font-size:13px">Спишется</span>
+          <span id="po-usdt" style="font-weight:700;color:#a78bfa;font-size:16px"></span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="color:rgba(255,255,255,0.35);font-size:13px">Курс</span>
+          <span id="po-rate" style="font-size:13px;color:rgba(255,255,255,0.5)"></span>
+        </div>
       </div>
       <button class="btn btn-violet" onclick="confirmPay()">💳 Оплатить</button>
       <button class="btn btn-red" style="margin-top:8px" onclick="closePay()">Отмена</button>
     </div>
 
-    <!-- Success -->
     <div id="pay-success" style="display:none;text-align:center;padding:24px 0">
-      <div class="check-anim"><span style="font-size:36px">✓</span></div>
-      <p style="font-size:18px;font-weight:700;margin-bottom:4px">Оплачено!</p>
-      <p id="ps-info" style="font-size:13px;color:rgba(255,255,255,0.4)"></p>
-      <button class="btn btn-ghost" style="margin-top:16px" onclick="closePay()">Готово</button>
+      <div class="check-anim"><span style="font-size:36px;color:#fff">✓</span></div>
+      <p style="font-size:18px;font-weight:700;margin-bottom:4px">Запрос отправлен!</p>
+      <p id="ps-info" style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px"></p>
+      <button class="btn btn-ghost" onclick="closePay()">Готово</button>
+    </div>
+
+    <div id="pay-error" style="display:none;text-align:center;padding:24px 0">
+      <div class="err-anim"><span style="font-size:36px;color:#fff">✕</span></div>
+      <p style="font-size:18px;font-weight:700;margin-bottom:4px">Ошибка</p>
+      <p id="pe-info" style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px"></p>
+      <button class="btn btn-ghost" onclick="closePay()">Закрыть</button>
     </div>
   </div>
 </div>
 
 <!-- BOTTOM NAV -->
 <div class="nav">
-  <div style="display:flex;justify-around;max-width:500px;margin:0 auto">
+  <div class="nav-inner">
     <div class="nav-i on" onclick="go('home')" data-p="home">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
       <span>Главная</span>
@@ -246,131 +318,156 @@ input::placeholder{color:rgba(255,255,255,0.2)}
 </div>
 
 <script>
-const BOT='CryptoQR_Robot';
+const TG=window.Telegram?.WebApp;
 const MK=3.5, FEE=0.50;
-let R=92, BAL=0, PAY_RUB=0, PAY_USDT=0;
-let INIT_DATA='';
+let R=92, PAY_RUB=0, PAY_USDT=0, STEAM_RUB=0, MOB_OP='';
 
-function getInitData(){
-  if(window.Telegram&&Telegram.WebApp) return Telegram.WebApp.initData||'';
-  return '';
-}
+if(TG){TG.ready();TG.expand();TG.setHeaderColor('#06060f');TG.setBackgroundColor('#06060f')}
 
-async function api(method,url,body){
-  const opts={method,headers:{'Authorization':'Bearer '+INIT_DATA,'Content-Type':'application/json'}};
-  if(body)opts.body=JSON.stringify(body);
-  const r=await fetch(url,opts);
-  return r.json();
-}
-
-async function loadRate(){
-  try{const d=await api('GET','/api/rate');if(d.rate){R=d.rate;updRate()}}catch(e){}
-}
-async function loadUser(){
-  try{
-    const d=await api('GET','/api/user');
-    if(d.balance_usdt!==undefined){
-      BAL=d.balance_usdt;
-      if(d.rate)R=d.rate;
-      const b=d.balance_usdt.toFixed(2);
-      const r=d.balance_rub.toFixed(2);
-      document.getElementById('bal').innerHTML=b+' <span style="font-size:16px;font-weight:500;color:rgba(255,255,255,0.4)">USDT</span>';
-      document.getElementById('bal-rub').textContent='≈ '+r+' ₽';
-      document.getElementById('w-bal').innerHTML=b+' <span style="font-size:16px;font-weight:500;color:rgba(255,255,255,0.4)">USDT</span>';
-      updRate();
-    }
-  }catch(e){}
-}
-
-function updRate(){
-  document.getElementById('w-rate').textContent=R.toFixed(2)+' ₽/USDT';
-}
+function haptic(t){try{TG?.HapticFeedback?.impactOccurred(t)}catch(e){}}
 
 function go(p){
   document.querySelectorAll('.page').forEach(e=>e.classList.remove('on'));
-  const el=document.getElementById('p-'+p);
-  if(el)el.classList.add('on');
+  document.getElementById('p-'+p)?.classList.add('on');
   document.querySelectorAll('.nav-i').forEach(n=>{n.classList.remove('on');if(n.dataset.p===p)n.classList.add('on')});
   haptic('light');
-  if(p==='wallet')loadUser();
-  if(p==='qr'){document.getElementById('qr-amt').value='';document.getElementById('qr-calc').style.display='none'}
+  if(p==='qr'){document.getElementById('qr-amt').value='';document.getElementById('qr-calc').style.display='none';document.getElementById('qr-pay-btn').style.display='none'}
 }
 
-function haptic(t){if(window.Telegram&&Telegram.WebApp)Telegram.WebApp.HapticFeedback.impactOccurred(t)}
+function sendData(data){try{TG?.sendData(JSON.stringify(data))}catch(e){alert('Ошибка: '+e.message)}}
+
+function sendAction(action){sendData({action})}
+
+async function fetchRate(){
+  const sources=[
+    async()=>{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub');const d=await r.json();return d.tether?.rub},
+    async()=>{const r=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY');const d=await r.json();const tr=parseFloat(d.price);const r2=await fetch('https://api.exchangerate-api.com/v4/latest/TRY');const d2=await r2.json();return tr*d2.rates?.RUB},
+    async()=>{const r=await fetch('https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=RUB');const d=await r.json();return d.RUB},
+    async()=>{const r=await fetch('https://api.exchangerate-api.com/v4/latest/USDT');const d=await r.json();return d.rates?.RUB},
+  ];
+  for(const fn of sources){try{const v=await fn();if(v&&v>50&&v<200){R=v;updRateDisplay();return}}catch(e){}}
+  updRateDisplay();
+}
+
+function updRateDisplay(){
+  document.getElementById('rate-top').textContent=R.toFixed(2)+' ₽/USDT';
+  document.getElementById('w-rate').textContent='Курс: '+R.toFixed(2)+' ₽/USDT';
+}
 
 function calcPay(){
   const v=parseFloat(document.getElementById('qr-amt').value);
   const box=document.getElementById('qr-calc');
-  if(!v||v<=0){box.style.display='none';return}
+  const btn=document.getElementById('qr-pay-btn');
+  if(!v||v<=0){box.style.display='none';btn.style.display='none';return}
   box.style.display='block';
+  btn.style.display='block';
   const u=(v/R*(1+MK/100)+FEE);
   PAY_RUB=v; PAY_USDT=u;
   document.getElementById('qr-usdt').textContent=u.toFixed(2)+' USDT';
-  document.getElementById('qr-info').textContent='~'+R.toFixed(2)+' ₽/USDT + '+MK+'% + '+FEE;
+  document.getElementById('qr-rate-info').textContent=R.toFixed(2)+' ₽/USDT + '+MK+'% + '+FEE+'$';
 }
 
-function pickSteam(a){
-  const u=(a/R*(1+MK/100)+FEE).toFixed(2);
-  document.getElementById('steam-info').style.display='block';
-  document.getElementById('steam-usdt').textContent=u+' USDT';
-}
-function pickOp(el){
-  document.querySelectorAll('#p-mobile .btn').forEach(b=>{b.style.borderColor='rgba(255,255,255,0.08)'});
-  el.style.borderColor='rgba(124,58,237,0.5)';
+function scanQR(){
+  if(!TG){alert('Скан доступен только в Telegram');return}
+  haptic('medium');
+  const frame=document.getElementById('qr-scan');
+  frame.classList.add('scanning');
+  document.getElementById('qr-scan-hint').textContent='Сканирование...';
+
+  TG.showScanQrPopup({text:'Наведи камеру на QR-код'},(text)=>{
+    frame.classList.remove('scanning');
+    document.getElementById('qr-scan-hint').textContent='Нажми чтобы сканировать QR';
+    TG.closeScanQrPopup();
+    const num=parseFloat(text.replace(/[^0-9.]/g,''));
+    if(num&&num>0){document.getElementById('qr-amt').value=num;calcPay();haptic('success')}
+    else{document.getElementById('qr-scan-hint').textContent='Не удалось распознать сумму';haptic('error')}
+    return true;
+  });
 }
 
 function doPay(){
-  if(!PAY_RUB){alert('Введите сумму');return}
+  if(!PAY_RUB){alert('Введите сумму чека');return}
   document.getElementById('po-rub').textContent=PAY_RUB.toFixed(2)+' ₽';
-  document.getElementById('po-usdt').textContent=PAY_USDT.toFixed(2)+' USDT';
-  const after=(BAL-PAY_USDT);
-  document.getElementById('po-after').textContent=after.toFixed(2)+' USDT';
+  document.getElementById('po-usdt').textContent=PAY_USDT.toFixed(4)+' USDT';
+  document.getElementById('po-rate').textContent=R.toFixed(2)+' ₽/USDT';
   document.getElementById('pay-confirm').style.display='block';
   document.getElementById('pay-loading').style.display='none';
   document.getElementById('pay-success').style.display='none';
+  document.getElementById('pay-error').style.display='none';
   document.getElementById('pay-overlay').classList.add('show');
+  haptic('medium');
 }
 
-async function confirmPay(){
+function confirmPay(){
   document.getElementById('pay-confirm').style.display='none';
   document.getElementById('pay-loading').style.display='block';
-  try{
-    const d=await api('POST','/api/pay',{amount_rub:PAY_RUB});
-    if(d.success){
-      BAL=d.balance_usdt;
-      document.getElementById('pay-loading').style.display='none';
-      document.getElementById('pay-success').style.display='block';
-      document.getElementById('ps-info').textContent=PAY_RUB.toFixed(2)+' ₽ → '+d.amount_usdt.toFixed(2)+' USDT | Остаток: '+d.balance_usdt.toFixed(2)+' USDT';
-      haptic('success');
-      loadUser();
-    }else{
-      document.getElementById('pay-loading').style.display='none';
-      document.getElementById('pay-confirm').style.display='block';
-      alert('❌ '+(d.error||'Ошибка оплаты'));
-    }
-  }catch(e){
+  haptic('medium');
+  sendData({action:'pay_qr',amount_rub:PAY_RUB,amount_usdt:PAY_USDT,rate:R});
+  setTimeout(()=>{
     document.getElementById('pay-loading').style.display='none';
-    document.getElementById('pay-confirm').style.display='block';
-    alert('❌ Ошибка соединения с сервером');
-  }
+    document.getElementById('pay-success').style.display='block';
+    document.getElementById('ps-info').textContent=PAY_RUB.toFixed(2)+' ₽ → '+PAY_USDT.toFixed(2)+' USDT';
+    haptic('success');
+  },500);
 }
 
-function closePay(){
-  document.getElementById('pay-overlay').classList.remove('show');
-  PAY_RUB=0;PAY_USDT=0;
+function closePay(){document.getElementById('pay-overlay').classList.remove('show');PAY_RUB=0;PAY_USDT=0}
+
+function pickSteam(el,rub){
+  document.querySelectorAll('#p-steam .amount-btn').forEach(b=>b.style.borderColor='rgba(255,255,255,0.06)');
+  el.style.borderColor='rgba(124,58,237,0.5)';
+  STEAM_RUB=rub;
+  const u=(rub/R*(1+MK/100)+FEE);
+  document.getElementById('steam-info').style.display='block';
+  document.getElementById('steam-usdt').textContent=u.toFixed(2)+' USDT';
+  document.getElementById('steam-custom').value='';
+}
+function pickSteamCustom(){
+  const v=parseFloat(document.getElementById('steam-custom').value);
+  if(!v||v<=0){document.getElementById('steam-info').style.display='none';return}
+  STEAM_RUB=v;
+  const u=(v/R*(1+MK/100)+FEE);
+  document.getElementById('steam-info').style.display='block';
+  document.getElementById('steam-usdt').textContent=u.toFixed(2)+' USDT';
+  document.querySelectorAll('#p-steam .amount-btn').forEach(b=>b.style.borderColor='rgba(255,255,255,0.06)');
+}
+function sendSteam(){
+  const sid=document.getElementById('steam-id').value.trim();
+  if(!STEAM_RUB){alert('Выбери сумму');return}
+  if(!sid){alert('Введи Steam ID');return}
+  sendData({action:'steam',amount_rub:STEAM_RUB,steam_id:sid});
+  haptic('success');
+  alert('Запрос отправлен! Проверь чат с ботом.');
 }
 
-document.addEventListener('DOMContentLoaded',()=>{
-  if(window.Telegram&&Telegram.WebApp){
-    Telegram.WebApp.ready();
-    Telegram.WebApp.expand();
-    Telegram.WebApp.setHeaderColor('#06060f');
-    Telegram.WebApp.setBackgroundColor('#06060f');
-  }
-  INIT_DATA=getInitData();
-  loadRate();
-  loadUser();
-});
+function pickOp(el,name){
+  document.querySelectorAll('#op-grid .amount-btn').forEach(b=>b.style.borderColor='rgba(255,255,255,0.06)');
+  el.style.borderColor='rgba(124,58,237,0.5)';
+  MOB_OP=name;
+}
+function sendMobile(){
+  if(!MOB_OP){alert('Выбери оператора');return}
+  const phone=document.getElementById('mob-phone').value.trim();
+  const amt=parseFloat(document.getElementById('mob-amt').value);
+  if(!phone){alert('Введи номер телефона');return}
+  if(!amt||amt<10||amt>15000){alert('Сумма от 10 до 15 000 ₽');return}
+  sendData({action:'mobile',operator:MOB_OP,phone,amount_rub:amt});
+  haptic('success');
+  alert('Запрос отправлен! Проверь чат с ботом.');
+}
+
+function sendWithdraw(){
+  const addr=document.getElementById('w-addr').value.trim();
+  const amt=parseFloat(document.getElementById('w-amt').value);
+  if(!addr){alert('Введи адрес кошелька');return}
+  if(!amt||amt<5){alert('Минимум 5 USDT');return}
+  sendData({action:'withdraw',address:addr,amount_usdt:amt});
+  haptic('success');
+  alert('Запрос вывода отправлен!');
+}
+
+fetchRate();
+setInterval(fetchRate,60000);
 </script>
 </body>
 </html>
