@@ -361,16 +361,28 @@
 <!-- QR PAY -->
 <div id="page-qr" class="page">
   <p class="text-xl font-bold mb-1">Оплата по QR</p>
-  <p class="text-sm text-white/40 mb-5">Введите сумму чека в рублях</p>
-  <div class="space-y-4">
-    <input type="number" id="qr-amount" placeholder="Сумма в ₽" step="1" min="1" oninput="calcQR()">
-    <div class="glass p-4 text-center" id="qr-calc" style="display:none;">
-      <p class="text-sm text-white/40 mb-1">К оплате</p>
-      <p class="text-2xl font-bold" id="qr-usdt">0.00 USDT</p>
-      <p class="text-xs text-white/30 mt-1" id="qr-rate-info"></p>
-    </div>
-    <button class="btn-primary" onclick="alert('Оплата QR')">Оплатить</button>
+  <p class="text-sm text-white/40 mb-5">Наведите камеру на QR-код терминала</p>
+
+  <div id="qr-scanner-box" class="glass-card p-6 mb-4 text-center" style="display:none;">
+    <div id="qr-video" style="width:100%;max-width:300px;margin:0 auto;border-radius:12px;overflow:hidden;"></div>
+    <p class="text-xs text-white/30 mt-3" id="qr-scan-status">Инициализация камеры...</p>
   </div>
+
+  <button class="btn-primary mb-3" id="btn-scan-qr" onclick="openTGScanner()">📷 Отсканировать QR-код</button>
+
+  <div class="flex items-center gap-3 my-4">
+    <div class="flex-1 h-px bg-white/10"></div>
+    <span class="text-xs text-white/30">или введите вручную</span>
+    <div class="flex-1 h-px bg-white/10"></div>
+  </div>
+
+  <input type="number" id="qr-amount" placeholder="Сумма в ₽" step="1" min="1" oninput="calcQR()">
+  <div class="glass p-4 text-center mt-3" id="qr-calc" style="display:none;">
+    <p class="text-sm text-white/40 mb-1">К оплате</p>
+    <p class="text-2xl font-bold" id="qr-usdt">0.00 USDT</p>
+    <p class="text-xs text-white/30 mt-1" id="qr-rate-info"></p>
+  </div>
+  <button class="btn-primary mt-3" onclick="alert('Оплата через бота')">Оплатить</button>
 </div>
 
 <!-- STEAM -->
@@ -584,28 +596,35 @@ const BOT_USERNAME = 'CryptoQR_Robot';
 const MARKUP = 3.5;
 const FEE = 0.50;
 
+const RATE_SOURCES = [
+  { url: 'https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub', parse: d => d?.tether?.rub },
+  { url: 'https://api.binance.com/api/v3/ticker/price?symbol=USDTRUB', parse: d => parseFloat(d?.price) },
+  { url: 'https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=RUB', parse: d => d?.RUB },
+  { url: 'https://api.exchangerate-api.com/v4/latest/USD', parse: d => d?.rates?.RUB },
+];
+
 async function fetchRate() {
-  try {
-    const resp = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub');
-    const data = await resp.json();
-    const price = data?.tether?.rub;
-    if (price) {
-      RATE = price;
-      updateRateDisplay();
-    }
-  } catch(e) {
-    console.warn('CoinGecko failed, trying Binance...', e);
+  for (const src of RATE_SOURCES) {
     try {
-      const resp2 = await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTRUB');
-      const data2 = await resp2.json();
-      if (data2?.price) {
-        RATE = parseFloat(data2.price);
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 5000);
+      const resp = await fetch(src.url, { signal: controller.signal });
+      clearTimeout(timeout);
+      if (!resp.ok) continue;
+      const data = await resp.json();
+      const price = src.parse(data);
+      if (price && price > 10 && price < 500) {
+        RATE = price;
         updateRateDisplay();
+        console.log('Rate loaded from', src.url, ':', RATE);
+        return;
       }
-    } catch(e2) {
-      console.warn('Binance failed too, using fallback', e2);
+    } catch(e) {
+      console.warn('Source failed:', src.url, e.message);
     }
   }
+  console.warn('All rate sources failed, using fallback:', RATE);
+  updateRateDisplay();
 }
 
 function updateRateDisplay() {
@@ -619,6 +638,43 @@ function updateRateDisplay() {
 function recalcAll() {
   const qrInput = document.getElementById('qr-amount');
   if (qrInput && qrInput.value) calcQR();
+}
+
+function openTGScanner() {
+  if (!window.Telegram || !Telegram.WebApp) {
+    alert('Сканер доступен только в Telegram');
+    return;
+  }
+  Telegram.WebApp.showScanQrPopup({ text: 'Наведите камеру на QR-код терминала' }, (data) => {
+    Telegram.WebApp.closeScanQrPopup();
+    handleQRData(data);
+    return false;
+  });
+}
+
+function handleQRData(raw) {
+  let amount = 0;
+  const trimmed = raw.trim();
+
+  if (trimmed.startsWith('https://t.me/') && trimmed.includes('start=pay_')) {
+    const match = trimmed.match(/start=pay_(\d+)/);
+    if (match) amount = parseFloat(match[1]);
+  } else if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    amount = parseFloat(trimmed);
+  } else {
+    const match = trimmed.match(/(\d+(?:\.\d+)?)/);
+    if (match) amount = parseFloat(match[1]);
+  }
+
+  if (amount > 0 && amount <= 500000) {
+    document.getElementById('qr-amount').value = amount;
+    calcQR();
+    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+    alert('Сумма: ' + amount + ' ₽\nОтправьте /start pay_' + Math.round(amount) + ' в боте для оплаты');
+  } else {
+    Telegram.WebApp.HapticFeedback.notificationOccurred('error');
+    alert('Не удалось распознать сумму из QR-кода:\n' + trimmed);
+  }
 }
 
 function navigateTo(page) {
