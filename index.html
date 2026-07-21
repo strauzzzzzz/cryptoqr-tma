@@ -6,746 +6,370 @@
 <title>CryptoQR</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Inter',-apple-system,sans-serif;background:#06060f;color:#fff;min-height:100vh;overflow-x:hidden;padding-bottom:80px}
+.safe{padding-top:max(12px,env(safe-area-inset-top))}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:16px}
+.card:active{transform:scale(0.98);background:rgba(255,255,255,0.07)}
 
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0a0a1a 100%);
-    color: #fff;
-    min-height: 100vh;
-    overflow-x: hidden;
-    padding-bottom: 90px;
-    -webkit-font-smoothing: antialiased;
-  }
+.balance-card{
+  background:linear-gradient(135deg,#1c1048 0%,#12083a 50%,#0a0520 100%);
+  border:1px solid rgba(139,92,246,0.2);
+  border-radius:20px;padding:20px;position:relative;overflow:hidden;
+}
+.balance-card::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;background:radial-gradient(circle,rgba(139,92,246,0.15),transparent);border-radius:50%}
 
-  .glass {
-    background: rgba(255,255,255,0.06);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 20px;
-  }
+.btn{border:none;border-radius:14px;padding:15px;color:#fff;font-weight:600;font-size:15px;width:100%;cursor:pointer;transition:all .15s}
+.btn:active{transform:scale(0.97)}
+.btn-violet{background:linear-gradient(135deg,#7c3aed,#6d28d9)}
+.btn-ghost{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08)}
+.btn-green{background:linear-gradient(135deg,#059669,#047857)}
+.btn-red{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#f87171}
 
-  .glass-strong {
-    background: rgba(255,255,255,0.10);
-    backdrop-filter: blur(30px);
-    -webkit-backdrop-filter: blur(30px);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 24px;
-  }
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,6,15,0.92);backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.05);padding:6px 0;padding-bottom:max(6px,env(safe-area-inset-bottom));z-index:100}
+.nav-i{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;cursor:pointer;opacity:0.35;transition:.2s}
+.nav-i.on{opacity:1}
+.nav-i svg{width:22px;height:22px}
+.nav-i span{font-size:10px;font-weight:500}
 
-  .glass-card {
-    background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid rgba(255,255,255,0.07);
-    border-radius: 16px;
-    transition: all 0.2s ease;
-  }
+.page{display:none;padding:16px}.page.on{display:block;animation:fadeIn .2s}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  .glass-card:active {
-    transform: scale(0.97);
-    background: rgba(255,255,255,0.08);
-  }
+input{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;color:#fff;font-size:15px;width:100%;outline:none}
+input:focus{border-color:rgba(124,58,237,0.5)}
+input::placeholder{color:rgba(255,255,255,0.2)}
 
-  .balance-glow {
-    background: linear-gradient(135deg, rgba(99,102,241,0.3) 0%, rgba(168,85,247,0.3) 100%);
-    border: 1px solid rgba(139,92,246,0.3);
-  }
+.stripe{height:1px;background:rgba(255,255,255,0.06);margin:16px 0}
 
-  .btn-primary {
-    background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-    border: none;
-    border-radius: 14px;
-    padding: 14px 24px;
-    color: white;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: 100%;
-  }
+.pay-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:200;display:none;align-items:flex-end;justify-content:center}
+.pay-overlay.show{display:flex}
+.pay-sheet{background:#0f0f24;border-radius:24px 24px 0 0;padding:24px 20px 32px;width:100%;max-width:500px;animation:slideUp .3s}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
 
-  .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+.loader{width:48px;height:48px;border:3px solid rgba(255,255,255,0.1);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
 
-  .btn-outline {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.12);
-    border-radius: 14px;
-    padding: 14px 24px;
-    color: white;
-    font-weight: 500;
-    font-size: 15px;
-    cursor: pointer;
-    transition: all 0.2s;
-    width: 100%;
-  }
+.check-anim{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:popIn .4s}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
 
-  .btn-outline:active { transform: scale(0.97); background: rgba(255,255,255,0.08); }
-
-  .nav-bar {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: rgba(10,10,26,0.85);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border-top: 1px solid rgba(255,255,255,0.06);
-    padding: 8px 0;
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
-    z-index: 100;
-  }
-
-  .nav-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    padding: 6px 0;
-    cursor: pointer;
-    transition: all 0.2s;
-    opacity: 0.4;
-  }
-
-  .nav-item.active { opacity: 1; }
-  .nav-item svg { width: 24px; height: 24px; }
-  .nav-item span { font-size: 10px; font-weight: 500; }
-
-  .page { display: none; padding: 16px; padding-top: 12px; }
-  .page.active { display: block; animation: fadeIn 0.2s ease; }
-
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-
-  .tx-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 14px;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
-  }
-
-  .tx-item:last-child { border-bottom: none; }
-
-  .status-badge {
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 8px;
-    font-weight: 500;
-  }
-
-  .status-done { background: rgba(34,197,94,0.15); color: #4ade80; }
-  .status-pending { background: rgba(234,179,8,0.15); color: #facc15; }
-  .status-fail { background: rgba(239,68,68,0.15); color: #f87171; }
-
-  .section-title {
-    font-size: 13px;
-    font-weight: 600;
-    color: rgba(255,255,255,0.4);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 12px;
-    padding-left: 4px;
-  }
-
-  input[type="text"], input[type="number"] {
-    background: rgba(255,255,255,0.06);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 14px 16px;
-    color: white;
-    font-size: 15px;
-    width: 100%;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-
-  input:focus { border-color: rgba(99,102,241,0.5); }
-  input::placeholder { color: rgba(255,255,255,0.25); }
-
-  .amount-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-  }
-
-  .amount-btn {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.08);
-    border-radius: 12px;
-    padding: 16px;
-    color: white;
-    font-weight: 600;
-    font-size: 15px;
-    cursor: pointer;
-    text-align: center;
-    transition: all 0.2s;
-  }
-
-  .amount-btn:active { transform: scale(0.96); background: rgba(99,102,241,0.15); border-color: rgba(99,102,241,0.3); }
-
-  .safe-top { padding-top: max(12px, env(safe-area-inset-top)); }
-
-  .skeleton {
-    background: linear-gradient(90deg, rgba(255,255,255,0.06) 25%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.06) 75%);
-    background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
-    border-radius: 8px;
-  }
-  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-
-  .rate-dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: #4ade80; display: inline-block;
-    margin-right: 4px; animation: pulse 2s infinite;
-  }
-  @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+.tag{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600}
+.tag-green{background:rgba(16,185,129,0.15);color:#34d399}
+.tag-red{background:rgba(239,68,68,0.15);color:#f87171}
 </style>
 </head>
-<body class="safe-top">
-
-<!-- Header -->
-<div class="px-5 pt-3 pb-2">
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-lg font-bold">CryptoQR</h1>
-      <p class="text-xs text-white/30">Оплата криптой</p>
-    </div>
-    <div class="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center" onclick="navigateTo('settings')">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-    </div>
-  </div>
-</div>
-
-<!-- Pages -->
+<body class="safe">
 
 <!-- HOME -->
-<div id="page-home" class="page active">
-  <div class="glass-strong p-5 mb-5 balance-glow">
-    <p class="text-xs text-white/40 mb-1">Общий баланс</p>
-    <p class="text-3xl font-bold mb-1" id="balance"><span class="skeleton" style="display:inline-block;width:120px;height:32px;"></span></p>
-    <p class="text-sm text-white/40" id="balance-rub"><span class="skeleton" style="display:inline-block;width:80px;height:16px;"></span></p>
+<div id="p-home" class="page on">
+  <div class="balance-card mb-5">
+    <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px">Баланс</p>
+    <p id="bal" style="font-size:32px;font-weight:700">—</p>
+    <p id="bal-rub" style="font-size:13px;color:rgba(255,255,255,0.35);margin-top:4px">—</p>
   </div>
 
-  <div class="grid grid-cols-2 gap-3 mb-5">
-    <div class="glass-card p-4 text-center" onclick="navigateTo('deposit')">
-      <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-emerald-500/15 flex items-center justify-center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg>
-      </div>
-      <p class="text-sm font-medium">Пополнить</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+    <div class="card" style="padding:16px;text-align:center;cursor:pointer" onclick="go('deposit')">
+      <div style="width:40px;height:40px;border-radius:12px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px">📥</div>
+      <p style="font-size:13px;font-weight:600">Пополнить</p>
     </div>
-    <div class="glass-card p-4 text-center" onclick="navigateTo('withdraw')">
-      <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-rose-500/15 flex items-center justify-center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-      </div>
-      <p class="text-sm font-medium">Вывести</p>
-    </div>
-    <div class="glass-card p-4 text-center" onclick="navigateTo('qr')">
-      <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-indigo-500/15 flex items-center justify-center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#818cf8" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="4" height="4"/></svg>
-      </div>
-      <p class="text-sm font-medium">QR-код</p>
-    </div>
-    <div class="glass-card p-4 text-center" onclick="navigateTo('checks')">
-      <div class="w-10 h-10 mx-auto mb-2 rounded-xl bg-amber-500/15 flex items-center justify-center">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>
-      </div>
-      <p class="text-sm font-medium">Чеки</p>
+    <div class="card" style="padding:16px;text-align:center;cursor:pointer" onclick="go('withdraw')">
+      <div style="width:40px;height:40px;border-radius:12px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px">📤</div>
+      <p style="font-size:13px;font-weight:600">Вывести</p>
     </div>
   </div>
 
-  <div class="section-title">Быстрые действия</div>
-  <div class="glass-card overflow-hidden mb-4">
-    <div class="tx-item cursor-pointer" onclick="navigateTo('steam')">
-      <div class="w-9 h-9 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
-        <span class="text-lg">🎮</span>
-      </div>
-      <div class="flex-1">
-        <p class="text-sm font-medium">Steam</p>
-        <p class="text-xs text-white/30">Пополнение баланса</p>
-      </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+  <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-left:4px">Услуги</div>
+  <div class="card" style="overflow:hidden">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.04)" onclick="go('steam')">
+      <span style="font-size:20px">🎮</span>
+      <div style="flex:1"><p style="font-size:14px;font-weight:500">Steam</p><p style="font-size:11px;color:rgba(255,255,255,0.3)">Пополнение баланса</p></div>
+      <span style="color:rgba(255,255,255,0.15)">›</span>
     </div>
-    <div class="tx-item cursor-pointer" onclick="navigateTo('mobile')">
-      <div class="w-9 h-9 rounded-lg bg-purple-500/15 flex items-center justify-center flex-shrink-0">
-        <span class="text-lg">📱</span>
-      </div>
-      <div class="flex-1">
-        <p class="text-sm font-medium">Мобильная связь</p>
-        <p class="text-xs text-white/30">Пополнение телефона</p>
-      </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-    </div>
-    <div class="tx-item cursor-pointer" onclick="navigateTo('referrals')">
-      <div class="w-9 h-9 rounded-lg bg-pink-500/15 flex items-center justify-center flex-shrink-0">
-        <span class="text-lg">👥</span>
-      </div>
-      <div class="flex-1">
-        <p class="text-sm font-medium">Реферальная программа</p>
-        <p class="text-xs text-white/30">Приглашайте друзей</p>
-      </div>
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer" onclick="go('mobile')">
+      <span style="font-size:20px">📱</span>
+      <div style="flex:1"><p style="font-size:14px;font-weight:500">Мобильная связь</p><p style="font-size:11px;color:rgba(255,255,255,0.3)">Пополнение телефона</p></div>
+      <span style="color:rgba(255,255,255,0.15)">›</span>
     </div>
   </div>
 </div>
 
 <!-- WALLET -->
-<div id="page-wallet" class="page">
-  <div class="glass-strong p-5 mb-5 balance-glow">
-    <p class="text-xs text-white/40 mb-1">Баланс кошелька</p>
-    <p class="text-3xl font-bold" id="wallet-balance"><span class="skeleton" style="display:inline-block;width:120px;height:32px;"></span></p>
-    <p class="text-sm text-white/40 mt-2">
-      <span class="rate-dot"></span>Курс: <span id="wallet-rate">загрузка...</span>
-    </p>
-    <p class="text-xs text-white/30 mt-1">Источник: Binance P2P</p>
+<div id="p-wallet" class="page">
+  <div class="balance-card mb-5">
+    <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px">Баланс кошелька</p>
+    <p id="w-bal" style="font-size:32px;font-weight:700">—</p>
+    <p id="w-rate" style="font-size:13px;color:rgba(255,255,255,0.35);margin-top:4px">—</p>
   </div>
-  <div class="section-title">Операции</div>
-  <div class="space-y-3">
-    <button class="btn-primary" onclick="navigateTo('deposit')">📥 Пополнить</button>
-    <button class="btn-outline" onclick="navigateTo('withdraw')">📤 Вывести</button>
-  </div>
-  <div class="mt-5">
-    <div class="glass-card p-4">
-      <p class="text-xs text-white/30 mb-2">Курс обновляется автоматически</p>
-      <p class="text-xs text-white/20">Все балансы хранятся в USDT. Курс USDT/RUB берётся с Binance P2P и обновляется каждые 60 секунд.</p>
-    </div>
-  </div>
+  <button class="btn btn-green" style="margin-bottom:10px" onclick="go('deposit')">📥 Пополнить</button>
+  <button class="btn btn-ghost" onclick="go('withdraw')">📤 Вывести</button>
+  <button class="btn btn-ghost" style="margin-top:10px" onclick="loadUser()">🔄 Обновить</button>
 </div>
 
 <!-- DEPOSIT -->
-<div id="page-deposit" class="page">
-  <p class="text-xl font-bold mb-1">Пополнение</p>
-  <p class="text-sm text-white/40 mb-5">Выберите способ пополнения</p>
-  <div class="space-y-3">
-    <div class="glass-card p-4 cursor-pointer" onclick="alert('CryptoBot интеграция')">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center text-lg">🤖</div>
-        <div><p class="font-medium">CryptoBot</p><p class="text-xs text-white/30">USDT, BTC, TON</p></div>
-      </div>
-    </div>
-    <div class="glass-card p-4 cursor-pointer" onclick="alert('xRocket интеграция')">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-cyan-500/15 flex items-center justify-center text-lg">🚀</div>
-        <div><p class="font-medium">xRocket</p><p class="text-xs text-white/30">USDT, TON</p></div>
-      </div>
-    </div>
-    <div class="glass-card p-4 cursor-pointer" onclick="alert('TRC20 адрес')">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-green-500/15 flex items-center justify-center text-lg">🔗</div>
-        <div><p class="font-medium">USDT TRC20</p><p class="text-xs text-white/30">Прямой перевод</p></div>
-      </div>
-    </div>
-    <div class="glass-card p-4 cursor-pointer" onclick="alert('BEP20 адрес')">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-orange-500/15 flex items-center justify-center text-lg">🔗</div>
-        <div><p class="font-medium">USDT BEP20</p><p class="text-xs text-white/30">Прямой перевод</p></div>
-      </div>
-    </div>
+<div id="p-deposit" class="page">
+  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Пополнение</p>
+  <p style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px">Выберите способ</p>
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer"><span style="font-size:24px">🤖</span><div><p style="font-weight:600">CryptoBot</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">USDT, BTC, TON</p></div></div>
+    <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer"><span style="font-size:24px">🚀</span><div><p style="font-weight:600">xRocket</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">USDT, TON</p></div></div>
+    <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer"><span style="font-size:24px">🔗</span><div><p style="font-weight:600">USDT TRC20</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">Прямой перевод</p></div></div>
+    <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer"><span style="font-size:24px">🔗</span><div><p style="font-weight:600">USDT BEP20</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">Прямой перевод</p></div></div>
   </div>
 </div>
 
 <!-- WITHDRAW -->
-<div id="page-withdraw" class="page">
-  <p class="text-xl font-bold mb-1">Вывод</p>
-  <p class="text-sm text-white/40 mb-5">Введите адрес и сумму</p>
-  <div class="space-y-4">
-    <input type="text" id="withdraw-addr" placeholder="Адрес кошелька (USDT)">
-    <input type="number" id="withdraw-amount" placeholder="Сумма USDT" step="0.01" min="1">
-    <button class="btn-primary" onclick="alert('Вывод: ' + document.getElementById('withdraw-amount').value + ' USDT → ' + document.getElementById('withdraw-addr').value)">Вывести</button>
+<div id="p-withdraw" class="page">
+  <p style="font-size:20px;font-weight:700;margin-bottom:16px">Вывод</p>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <input type="text" id="w-addr" placeholder="Адрес кошелька (USDT)">
+    <input type="number" id="w-amt" placeholder="Сумма USDT" step="0.01" min="5">
+    <button class="btn btn-violet" onclick="alert('Вывод: '+document.getElementById('w-amt').value+' USDT')">Вывести</button>
   </div>
 </div>
 
 <!-- QR PAY -->
-<div id="page-qr" class="page">
-  <p class="text-xl font-bold mb-1">Оплата по QR</p>
-  <p class="text-sm text-white/40 mb-5">Наведите камеру на QR-код терминала</p>
-
-  <div id="qr-scanner-box" class="glass-card p-6 mb-4 text-center" style="display:none;">
-    <div id="qr-video" style="width:100%;max-width:300px;margin:0 auto;border-radius:12px;overflow:hidden;"></div>
-    <p class="text-xs text-white/30 mt-3" id="qr-scan-status">Инициализация камеры...</p>
+<div id="p-qr" class="page">
+  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Оплата</p>
+  <p style="font-size:13px;color:rgba(255,255,255,0.35);margin-bottom:16px">Сумма чека в рублях</p>
+  <input type="number" id="qr-amt" placeholder="350" step="1" min="1" oninput="calcPay()">
+  <div id="qr-calc" style="display:none;margin-top:12px;padding:16px;background:rgba(124,58,237,0.1);border:1px solid rgba(124,58,237,0.2);border-radius:14px;text-align:center">
+    <p style="font-size:12px;color:rgba(255,255,255,0.4);margin-bottom:4px">К оплате</p>
+    <p id="qr-usdt" style="font-size:28px;font-weight:700">0 USDT</p>
+    <p id="qr-info" style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:4px"></p>
   </div>
-
-  <button class="btn-primary mb-3" id="btn-scan-qr" onclick="openTGScanner()">📷 Отсканировать QR-код</button>
-
-  <div class="flex items-center gap-3 my-4">
-    <div class="flex-1 h-px bg-white/10"></div>
-    <span class="text-xs text-white/30">или введите вручную</span>
-    <div class="flex-1 h-px bg-white/10"></div>
-  </div>
-
-  <input type="number" id="qr-amount" placeholder="Сумма в ₽" step="1" min="1" oninput="calcQR()">
-  <div class="glass p-4 text-center mt-3" id="qr-calc" style="display:none;">
-    <p class="text-sm text-white/40 mb-1">К оплате</p>
-    <p class="text-2xl font-bold" id="qr-usdt">0.00 USDT</p>
-    <p class="text-xs text-white/30 mt-1" id="qr-rate-info"></p>
-  </div>
-  <button class="btn-primary mt-3" onclick="alert('Оплата через бота')">Оплатить</button>
+  <button class="btn btn-violet" style="margin-top:12px" id="qr-pay-btn" onclick="doPay()">Оплатить</button>
 </div>
 
 <!-- STEAM -->
-<div id="page-steam" class="page">
-  <p class="text-xl font-bold mb-1">Пополнение Steam</p>
-  <p class="text-sm text-white/40 mb-5">Выберите сумму пополнения</p>
-  <div class="amount-grid mb-4">
-    <div class="amount-btn" onclick="selectSteam(100)">100 ₽</div>
-    <div class="amount-btn" onclick="selectSteam(300)">300 ₽</div>
-    <div class="amount-btn" onclick="selectSteam(500)">500 ₽</div>
-    <div class="amount-btn" onclick="selectSteam(1000)">1000 ₽</div>
-    <div class="amount-btn" onclick="selectSteam(2000)">2000 ₽</div>
-    <div class="amount-btn" onclick="selectSteam(5000)">5000 ₽</div>
+<div id="p-steam" class="page">
+  <p style="font-size:20px;font-weight:700;margin-bottom:16px">Пополнение Steam</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+    <button class="btn btn-ghost" onclick="pickSteam(100)">100 ₽</button>
+    <button class="btn btn-ghost" onclick="pickSteam(300)">300 ₽</button>
+    <button class="btn btn-ghost" onclick="pickSteam(500)">500 ₽</button>
+    <button class="btn btn-ghost" onclick="pickSteam(1000)">1000 ₽</button>
+    <button class="btn btn-ghost" onclick="pickSteam(2000)">2000 ₽</button>
+    <button class="btn btn-ghost" onclick="pickSteam(5000)">5000 ₽</button>
   </div>
-  <div class="glass-card p-4 mb-4" id="steam-info" style="display:none;">
-    <p class="text-sm text-white/40">К оплате:</p>
-    <p class="text-xl font-bold" id="steam-usdt">0.00 USDT</p>
-  </div>
-  <input type="text" id="steam-id" placeholder="Steam ID (цифровой)">
-  <div class="mt-4">
-    <button class="btn-primary" onclick="alert('Пополнение Steam')">Пополнить</button>
-  </div>
+  <div id="steam-info" style="display:none;padding:12px;margin-bottom:12px" class="card"><p style="font-size:12px;color:rgba(255,255,255,0.4)">К оплате</p><p id="steam-usdt" style="font-size:18px;font-weight:700"></p></div>
+  <input type="text" id="steam-id" placeholder="Steam ID">
+  <button class="btn btn-violet" style="margin-top:12px" onclick="alert('Пополнение Steam')">Пополнить</button>
 </div>
 
 <!-- MOBILE -->
-<div id="page-mobile" class="page">
-  <p class="text-xl font-bold mb-1">Мобильная связь</p>
-  <p class="text-sm text-white/40 mb-5">Выберите оператора</p>
-  <div class="space-y-3 mb-4">
-    <div class="glass-card p-4 cursor-pointer" onclick="selectMobileOp(this, 'МТС')">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-red-500/15 flex items-center justify-center text-lg">📱</div>
-        <p class="font-medium">МТС</p>
-      </div>
-    </div>
-    <div class="glass-card p-4 cursor-pointer" onclick="selectMobileOp(this, 'МегаФон')">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-green-500/15 flex items-center justify-center text-lg">📱</div>
-        <p class="font-medium">МегаФон</p>
-      </div>
-    </div>
-    <div class="glass-card p-4 cursor-pointer" onclick="selectMobileOp(this, 'Билайн')">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-yellow-500/15 flex items-center justify-center text-lg">📱</div>
-        <p class="font-medium">Билайн</p>
-      </div>
-    </div>
-    <div class="glass-card p-4 cursor-pointer" onclick="selectMobileOp(this, 'Теле2')">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl bg-blue-500/15 flex items-center justify-center text-lg">📱</div>
-        <p class="font-medium">Теле2</p>
-      </div>
-    </div>
+<div id="p-mobile" class="page">
+  <p style="font-size:20px;font-weight:700;margin-bottom:16px">Мобильная связь</p>
+  <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px">
+    <button class="btn btn-ghost" onclick="pickOp(this)">📱 МТС</button>
+    <button class="btn btn-ghost" onclick="pickOp(this)">📱 МегаФон</button>
+    <button class="btn btn-ghost" onclick="pickOp(this)">📱 Билайн</button>
+    <button class="btn btn-ghost" onclick="pickOp(this)">📱 Теле2</button>
   </div>
-  <input type="text" id="mobile-phone" placeholder="Номер телефона" class="mb-3">
-  <input type="number" id="mobile-amount" placeholder="Сумма в ₽ (10–15000)" min="10" max="15000">
-  <div class="mt-4">
-    <button class="btn-primary" onclick="alert('Пополнение связи')">Пополнить</button>
-  </div>
-</div>
-
-<!-- CHECKS -->
-<div id="page-checks" class="page">
-  <p class="text-xl font-bold mb-1">Чеки</p>
-  <p class="text-sm text-white/40 mb-5">Внутренние переводы</p>
-  <div class="glass-card p-4 mb-4">
-    <p class="text-sm text-white/40 mb-3">Создать новый чек</p>
-    <input type="number" id="check-amount" placeholder="Сумма USDT" step="0.01" min="0.01" class="mb-3">
-    <button class="btn-primary" onclick="alert('Чек создан: ' + document.getElementById('check-amount').value + ' USDT')">Создать чек</button>
-  </div>
-  <div class="section-title">Мои чеки</div>
-  <div class="glass-card overflow-hidden">
-    <div class="tx-item">
-      <div class="flex-1">
-        <p class="text-sm font-medium">5.00 USDT</p>
-        <p class="text-xs text-white/30">21.07.2026 12:30</p>
-      </div>
-      <span class="status-badge status-pending">Ожидает</span>
-    </div>
-    <div class="tx-item">
-      <div class="flex-1">
-        <p class="text-sm font-medium">10.00 USDT</p>
-        <p class="text-xs text-white/30">20.07.2026 18:15</p>
-      </div>
-      <span class="status-badge status-done">Активирован</span>
-    </div>
-  </div>
+  <input type="text" id="mob-phone" placeholder="Номер телефона" style="margin-bottom:10px">
+  <input type="number" id="mob-amt" placeholder="Сумма в ₽ (10–15000)" min="10" max="15000">
+  <button class="btn btn-violet" style="margin-top:12px" onclick="alert('Пополнение связи')">Пополнить</button>
 </div>
 
 <!-- HISTORY -->
-<div id="page-history" class="page">
-  <p class="text-xl font-bold mb-1">История</p>
-  <p class="text-sm text-white/40 mb-5">Последние операции</p>
-  <div class="glass-card overflow-hidden">
-    <div class="tx-item">
-      <div class="w-9 h-9 rounded-lg bg-emerald-500/15 flex items-center justify-center flex-shrink-0 text-lg">📥</div>
-      <div class="flex-1">
-        <p class="text-sm font-medium">Пополнение</p>
-        <p class="text-xs text-white/30">21.07.2026 10:00</p>
-      </div>
-      <div class="text-right">
-        <p class="text-sm font-medium text-emerald-400">+50.00 USDT</p>
-        <span class="status-badge status-done">Готово</span>
-      </div>
+<div id="p-history" class="page">
+  <p style="font-size:20px;font-weight:700;margin-bottom:16px">История</p>
+  <div class="card" style="overflow:hidden">
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.04)">
+      <span style="font-size:18px">📥</span>
+      <div style="flex:1"><p style="font-size:13px;font-weight:500">Пополнение</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Сегодня 10:00</p></div>
+      <div style="text-align:right"><p style="font-size:13px;font-weight:600;color:#34d399">+50.00</p><span class="tag tag-green">OK</span></div>
     </div>
-    <div class="tx-item">
-      <div class="w-9 h-9 rounded-lg bg-rose-500/15 flex items-center justify-center flex-shrink-0 text-lg">💳</div>
-      <div class="flex-1">
-        <p class="text-sm font-medium">Оплата QR</p>
-        <p class="text-xs text-white/30">21.07.2026 14:32</p>
-      </div>
-      <div class="text-right">
-        <p class="text-sm font-medium text-rose-400">-3.75 USDT</p>
-        <span class="status-badge status-done">Готово</span>
-      </div>
-    </div>
-    <div class="tx-item">
-      <div class="w-9 h-9 rounded-lg bg-amber-500/15 flex items-center justify-center flex-shrink-0 text-lg">🧾</div>
-      <div class="flex-1">
-        <p class="text-sm font-medium">Создание чека</p>
-        <p class="text-xs text-white/30">20.07.2026 09:12</p>
-      </div>
-      <div class="text-right">
-        <p class="text-sm font-medium text-amber-400">-10.00 USDT</p>
-        <span class="status-badge status-done">Готово</span>
-      </div>
+    <div style="display:flex;align-items:center;gap:12px;padding:14px 16px">
+      <span style="font-size:18px">💳</span>
+      <div style="flex:1"><p style="font-size:13px;font-weight:500">Оплата QR</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Сегодня 14:32</p></div>
+      <div style="text-align:right"><p style="font-size:13px;font-weight:600;color:#f87171">-3.75</p><span class="tag tag-green">OK</span></div>
     </div>
   </div>
 </div>
 
-<!-- REFERRALS -->
-<div id="page-referrals" class="page">
-  <p class="text-xl font-bold mb-1">Реферальная программа</p>
-  <p class="text-sm text-white/40 mb-5">Приглашайте друзей, получайте бонусы</p>
-  <div class="glass-strong p-5 mb-5 text-center">
-    <p class="text-4xl mb-2">🎁</p>
-    <p class="text-3xl font-bold">1.00 USDT</p>
-    <p class="text-sm text-white/40 mt-1">Бонус за приглашённого</p>
-  </div>
-  <div class="glass-card p-4 mb-4">
-    <p class="text-sm text-white/40 mb-2">Ваша реферальная ссылка</p>
-    <div class="flex gap-2">
-      <input type="text" id="ref-link" value="https://t.me/CryptoQR_Robot?ref=0" readonly class="flex-1" style="font-size:12px;">
-      <button class="btn-primary" style="width:auto;padding:14px 16px;" onclick="copyRef()">📋</button>
+<!-- PAY OVERLAY -->
+<div class="pay-overlay" id="pay-overlay">
+  <div class="pay-sheet">
+    <div style="width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 20px"></div>
+
+    <!-- Loading -->
+    <div id="pay-loading" style="display:none;text-align:center;padding:24px 0">
+      <div class="loader"></div>
+      <p style="margin-top:12px;color:rgba(255,255,255,0.5);font-size:14px">Обработка оплаты...</p>
     </div>
-  </div>
-  <div class="glass-card p-4">
-    <p class="text-sm text-white/40 mb-1">Приглашено</p>
-    <p class="text-2xl font-bold">0</p>
+
+    <!-- Confirm -->
+    <div id="pay-confirm">
+      <p style="font-size:16px;font-weight:600;margin-bottom:16px;text-align:center">Подтвердите оплату</p>
+      <div style="padding:16px;border-radius:14px;background:rgba(255,255,255,0.03);margin-bottom:16px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:rgba(255,255,255,0.4);font-size:13px">Сумма</span><span id="po-rub" style="font-weight:600;font-size:13px"></span></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="color:rgba(255,255,255,0.4);font-size:13px">К оплате</span><span id="po-usdt" style="font-weight:700;color:#a78bfa;font-size:15px"></span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:rgba(255,255,255,0.4);font-size:13px">Баланс после</span><span id="po-after" style="font-size:13px"></span></div>
+      </div>
+      <button class="btn btn-violet" onclick="confirmPay()">💳 Оплатить</button>
+      <button class="btn btn-red" style="margin-top:8px" onclick="closePay()">Отмена</button>
+    </div>
+
+    <!-- Success -->
+    <div id="pay-success" style="display:none;text-align:center;padding:24px 0">
+      <div class="check-anim"><span style="font-size:36px">✓</span></div>
+      <p style="font-size:18px;font-weight:700;margin-bottom:4px">Оплачено!</p>
+      <p id="ps-info" style="font-size:13px;color:rgba(255,255,255,0.4)"></p>
+      <button class="btn btn-ghost" style="margin-top:16px" onclick="closePay()">Готово</button>
+    </div>
   </div>
 </div>
-
-<!-- SETTINGS -->
-<div id="page-settings" class="page">
-  <p class="text-xl font-bold mb-5">Настройки</p>
-  <div class="glass-card overflow-hidden">
-    <div class="tx-item">
-      <div class="flex-1"><p class="text-sm font-medium">2FA (TOTP)</p><p class="text-xs text-white/30">Google Authenticator</p></div>
-      <div class="w-12 h-7 rounded-full bg-white/10 relative cursor-pointer" onclick="this.classList.toggle('bg-indigo-500')"><div class="w-5 h-5 rounded-full bg-white absolute top-1 left-1 transition-all"></div></div>
-    </div>
-    <div class="tx-item">
-      <div class="flex-1"><p class="text-sm font-medium">Пин-код</p><p class="text-xs text-white/30">Защита разделов</p></div>
-      <div class="w-12 h-7 rounded-full bg-white/10 relative cursor-pointer" onclick="this.classList.toggle('bg-indigo-500')"><div class="w-5 h-5 rounded-full bg-white absolute top-1 left-1 transition-all"></div></div>
-    </div>
-    <div class="tx-item">
-      <div class="flex-1"><p class="text-sm font-medium">Тёмная тема</p><p class="text-xs text-white/30">Активна</p></div>
-      <div class="w-12 h-7 rounded-full bg-indigo-500 relative"><div class="w-5 h-5 rounded-full bg-white absolute top-1 right-1 transition-all"></div></div>
-    </div>
-  </div>
-  <div class="mt-5 glass-card p-4">
-    <p class="text-sm text-white/40 mb-2">Текущий курс</p>
-    <p class="text-lg font-bold" id="settings-rate">—</p>
-    <p class="text-xs text-white/30 mt-1">Наценка: 3.5% + 0.50 USDT</p>
-  </div>
-  <div class="mt-3">
-    <p class="text-xs text-white/20 text-center">CryptoQR v1.0.0</p>
-  </div>
-</div>
-
 
 <!-- BOTTOM NAV -->
-<div class="nav-bar">
-  <div class="flex justify-around items-center max-w-lg mx-auto">
-    <div class="nav-item active" onclick="navigateTo('home')" data-page="home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>
+<div class="nav">
+  <div style="display:flex;justify-around;max-width:500px;margin:0 auto">
+    <div class="nav-i on" onclick="go('home')" data-p="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
       <span>Главная</span>
     </div>
-    <div class="nav-item" onclick="navigateTo('wallet')" data-page="wallet">
+    <div class="nav-i" onclick="go('wallet')" data-p="wallet">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
       <span>Кошелёк</span>
     </div>
-    <div class="nav-item" onclick="navigateTo('qr')" data-page="qr">
+    <div class="nav-i" onclick="go('qr')" data-p="qr">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="4" height="4"/></svg>
-      <span>QR</span>
+      <span>Оплата</span>
     </div>
-    <div class="nav-item" onclick="navigateTo('history')" data-page="history">
+    <div class="nav-i" onclick="go('history')" data-p="history">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
       <span>История</span>
-    </div>
-    <div class="nav-item" onclick="navigateTo('settings')" data-page="settings">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      <span>Ещё</span>
     </div>
   </div>
 </div>
 
 <script>
-let RATE = 92;
-let BALANCE_USDT = 0;
-const BOT_USERNAME = 'CryptoQR_Robot';
-const MARKUP = 3.5;
-const FEE = 0.50;
+const BOT='CryptoQR_Robot';
+const MK=3.5, FEE=0.50;
+let R=92, BAL=0, PAY_RUB=0, PAY_USDT=0;
+let INIT_DATA='';
 
-const RATE_SOURCES = [
-  { url: 'https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub', parse: d => d?.tether?.rub },
-  { url: 'https://api.binance.com/api/v3/ticker/price?symbol=USDTRUB', parse: d => parseFloat(d?.price) },
-  { url: 'https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=RUB', parse: d => d?.RUB },
-  { url: 'https://api.exchangerate-api.com/v4/latest/USD', parse: d => d?.rates?.RUB },
-];
+function getInitData(){
+  if(window.Telegram&&Telegram.WebApp) return Telegram.WebApp.initData||'';
+  return '';
+}
 
-async function fetchRate() {
-  for (const src of RATE_SOURCES) {
-    try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 5000);
-      const resp = await fetch(src.url, { signal: controller.signal });
-      clearTimeout(timeout);
-      if (!resp.ok) continue;
-      const data = await resp.json();
-      const price = src.parse(data);
-      if (price && price > 10 && price < 500) {
-        RATE = price;
-        updateRateDisplay();
-        console.log('Rate loaded from', src.url, ':', RATE);
-        return;
-      }
-    } catch(e) {
-      console.warn('Source failed:', src.url, e.message);
+async function api(method,url,body){
+  const opts={method,headers:{'Authorization':'Bearer '+INIT_DATA,'Content-Type':'application/json'}};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(url,opts);
+  return r.json();
+}
+
+async function loadRate(){
+  try{const d=await api('GET','/api/rate');if(d.rate){R=d.rate;updRate()}}catch(e){}
+}
+async function loadUser(){
+  try{
+    const d=await api('GET','/api/user');
+    if(d.balance_usdt!==undefined){
+      BAL=d.balance_usdt;
+      if(d.rate)R=d.rate;
+      const b=d.balance_usdt.toFixed(2);
+      const r=d.balance_rub.toFixed(2);
+      document.getElementById('bal').innerHTML=b+' <span style="font-size:16px;font-weight:500;color:rgba(255,255,255,0.4)">USDT</span>';
+      document.getElementById('bal-rub').textContent='≈ '+r+' ₽';
+      document.getElementById('w-bal').innerHTML=b+' <span style="font-size:16px;font-weight:500;color:rgba(255,255,255,0.4)">USDT</span>';
+      updRate();
     }
-  }
-  console.warn('All rate sources failed, using fallback:', RATE);
-  updateRateDisplay();
+  }catch(e){}
 }
 
-function updateRateDisplay() {
-  const rateEl = document.getElementById('wallet-rate');
-  const settingsRateEl = document.getElementById('settings-rate');
-  if (rateEl) rateEl.textContent = RATE.toFixed(2) + ' ₽/USDT';
-  if (settingsRateEl) settingsRateEl.textContent = RATE.toFixed(2) + ' ₽/USDT';
-  recalcAll();
+function updRate(){
+  document.getElementById('w-rate').textContent=R.toFixed(2)+' ₽/USDT';
 }
 
-function recalcAll() {
-  const qrInput = document.getElementById('qr-amount');
-  if (qrInput && qrInput.value) calcQR();
+function go(p){
+  document.querySelectorAll('.page').forEach(e=>e.classList.remove('on'));
+  const el=document.getElementById('p-'+p);
+  if(el)el.classList.add('on');
+  document.querySelectorAll('.nav-i').forEach(n=>{n.classList.remove('on');if(n.dataset.p===p)n.classList.add('on')});
+  haptic('light');
+  if(p==='wallet')loadUser();
+  if(p==='qr'){document.getElementById('qr-amt').value='';document.getElementById('qr-calc').style.display='none'}
 }
 
-function openTGScanner() {
-  if (!window.Telegram || !Telegram.WebApp) {
-    alert('Сканер доступен только в Telegram');
-    return;
-  }
-  Telegram.WebApp.showScanQrPopup({ text: 'Наведите камеру на QR-код терминала' }, (data) => {
-    Telegram.WebApp.closeScanQrPopup();
-    handleQRData(data);
-    return false;
-  });
+function haptic(t){if(window.Telegram&&Telegram.WebApp)Telegram.WebApp.HapticFeedback.impactOccurred(t)}
+
+function calcPay(){
+  const v=parseFloat(document.getElementById('qr-amt').value);
+  const box=document.getElementById('qr-calc');
+  if(!v||v<=0){box.style.display='none';return}
+  box.style.display='block';
+  const u=(v/R*(1+MK/100)+FEE);
+  PAY_RUB=v; PAY_USDT=u;
+  document.getElementById('qr-usdt').textContent=u.toFixed(2)+' USDT';
+  document.getElementById('qr-info').textContent='~'+R.toFixed(2)+' ₽/USDT + '+MK+'% + '+FEE;
 }
 
-function handleQRData(raw) {
-  let amount = 0;
-  const trimmed = raw.trim();
+function pickSteam(a){
+  const u=(a/R*(1+MK/100)+FEE).toFixed(2);
+  document.getElementById('steam-info').style.display='block';
+  document.getElementById('steam-usdt').textContent=u+' USDT';
+}
+function pickOp(el){
+  document.querySelectorAll('#p-mobile .btn').forEach(b=>{b.style.borderColor='rgba(255,255,255,0.08)'});
+  el.style.borderColor='rgba(124,58,237,0.5)';
+}
 
-  if (trimmed.startsWith('https://t.me/') && trimmed.includes('start=pay_')) {
-    const match = trimmed.match(/start=pay_(\d+)/);
-    if (match) amount = parseFloat(match[1]);
-  } else if (/^\d+(\.\d+)?$/.test(trimmed)) {
-    amount = parseFloat(trimmed);
-  } else {
-    const match = trimmed.match(/(\d+(?:\.\d+)?)/);
-    if (match) amount = parseFloat(match[1]);
-  }
+function doPay(){
+  if(!PAY_RUB){alert('Введите сумму');return}
+  document.getElementById('po-rub').textContent=PAY_RUB.toFixed(2)+' ₽';
+  document.getElementById('po-usdt').textContent=PAY_USDT.toFixed(2)+' USDT';
+  const after=(BAL-PAY_USDT);
+  document.getElementById('po-after').textContent=after.toFixed(2)+' USDT';
+  document.getElementById('pay-confirm').style.display='block';
+  document.getElementById('pay-loading').style.display='none';
+  document.getElementById('pay-success').style.display='none';
+  document.getElementById('pay-overlay').classList.add('show');
+}
 
-  if (amount > 0 && amount <= 500000) {
-    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-    const botUrl = 'https://t.me/' + BOT_USERNAME + '?start=pay_' + Math.round(amount);
-    if (Telegram.WebApp.initDataUnsafe?.start_param) {
-      Telegram.WebApp.close();
+async function confirmPay(){
+  document.getElementById('pay-confirm').style.display='none';
+  document.getElementById('pay-loading').style.display='block';
+  try{
+    const d=await api('POST','/api/pay',{amount_rub:PAY_RUB});
+    if(d.success){
+      BAL=d.balance_usdt;
+      document.getElementById('pay-loading').style.display='none';
+      document.getElementById('pay-success').style.display='block';
+      document.getElementById('ps-info').textContent=PAY_RUB.toFixed(2)+' ₽ → '+d.amount_usdt.toFixed(2)+' USDT | Остаток: '+d.balance_usdt.toFixed(2)+' USDT';
+      haptic('success');
+      loadUser();
+    }else{
+      document.getElementById('pay-loading').style.display='none';
+      document.getElementById('pay-confirm').style.display='block';
+      alert('❌ '+(d.error||'Ошибка оплаты'));
     }
-    window.location.href = botUrl;
-  } else {
-    Telegram.WebApp.HapticFeedback.notificationOccurred('error');
-    alert('Не удалось распознать сумму из QR-кода:\n' + trimmed);
+  }catch(e){
+    document.getElementById('pay-loading').style.display='none';
+    document.getElementById('pay-confirm').style.display='block';
+    alert('❌ Ошибка соединения с сервером');
   }
 }
 
-function navigateTo(page) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  const el = document.getElementById('page-' + page);
-  if (el) el.classList.add('active');
-
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  const navEl = document.querySelector('.nav-item[data-page="' + page + '"]');
-  if (navEl) navEl.classList.add('active');
-
-  if (window.Telegram && Telegram.WebApp) {
-    Telegram.WebApp.HapticFeedback.impactOccurred('light');
-  }
+function closePay(){
+  document.getElementById('pay-overlay').classList.remove('show');
+  PAY_RUB=0;PAY_USDT=0;
 }
 
-function calcQR() {
-  const val = parseFloat(document.getElementById('qr-amount').value);
-  const box = document.getElementById('qr-calc');
-  if (!val || val <= 0) { box.style.display = 'none'; return; }
-  box.style.display = 'block';
-  const usdt = (val / RATE * (1 + MARKUP/100) + FEE).toFixed(2);
-  document.getElementById('qr-usdt').textContent = usdt + ' USDT';
-  document.getElementById('qr-rate-info').textContent = 'Курс ~' + RATE.toFixed(2) + ' ₽/USDT + ' + MARKUP + '% + ' + FEE + ' USDT';
-}
-
-function selectSteam(amount) {
-  const usdt = (amount / RATE * (1 + MARKUP/100) + FEE).toFixed(2);
-  document.getElementById('steam-info').style.display = 'block';
-  document.getElementById('steam-usdt').textContent = usdt + ' USDT (≈ ' + amount + ' ₽)';
-}
-
-function selectMobileOp(el, name) {
-  document.querySelectorAll('#page-mobile .glass-card').forEach(c => c.style.borderColor = 'rgba(255,255,255,0.07)');
-  el.style.borderColor = 'rgba(99,102,241,0.5)';
-  document.getElementById('mobile-phone').focus();
-}
-
-function copyRef() {
-  const input = document.getElementById('ref-link');
-  input.select();
-  document.execCommand('copy');
-  if (window.Telegram && Telegram.WebApp) {
-    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
-  }
-  alert('Ссылка скопирована!');
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  if (window.Telegram && Telegram.WebApp) {
+document.addEventListener('DOMContentLoaded',()=>{
+  if(window.Telegram&&Telegram.WebApp){
     Telegram.WebApp.ready();
     Telegram.WebApp.expand();
-    Telegram.WebApp.setHeaderColor('#0a0a1a');
-    Telegram.WebApp.setBackgroundColor('#0a0a1a');
-
-    const user = Telegram.WebApp.initDataUnsafe?.user;
-    if (user) {
-      document.getElementById('ref-link').value = 'https://t.me/' + BOT_USERNAME + '?start=ref_' + user.id;
-      document.getElementById('balance').textContent = '0.00 USDT';
-      document.getElementById('balance-rub').textContent = '≈ 0.00 ₽';
-      document.getElementById('wallet-balance').textContent = '0.00 USDT';
-    }
-  } else {
-    document.getElementById('balance').textContent = '0.00 USDT';
-    document.getElementById('balance-rub').textContent = '≈ 0.00 ₽';
-    document.getElementById('wallet-balance').textContent = '0.00 USDT';
+    Telegram.WebApp.setHeaderColor('#06060f');
+    Telegram.WebApp.setBackgroundColor('#06060f');
   }
-
-  fetchRate();
+  INIT_DATA=getInitData();
+  loadRate();
+  loadUser();
 });
 </script>
 </body>
