@@ -2,356 +2,505 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>CryptoQR</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{font-family:'Inter',-apple-system,sans-serif;background:#06060f;color:#fff;min-height:100vh;overflow-x:hidden;padding-bottom:90px}
-.safe{padding-top:max(12px,env(safe-area-inset-top))}
+:root{--bg:#06090f;--bg2:#0c1118;--bg3:#111822;--grn:#22c55e;--grn2:#16a34a;--grn-glow:rgba(34,197,94,.25);--grn-dim:rgba(34,197,94,.08);--txt:#f0f4f8;--txt2:rgba(240,244,248,.55);--txt3:rgba(240,244,248,.25);--border:rgba(240,244,248,.06);--red:#ef4444;--amber:#f59e0b;--blue:#3b82f6}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;overflow-x:hidden;padding-bottom:80px}
+.safe{padding-top:max(10px,env(safe-area-inset-top))}
 
-.card{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);border-radius:16px;transition:all .15s}
-.card:active{transform:scale(0.97);background:rgba(255,255,255,0.07)}
+.screen{display:none;padding:16px 16px 20px}.screen.on{display:block;animation:fadeUp .25s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-.balance-card{
-  background:linear-gradient(135deg,#1c1048 0%,#12083a 50%,#0a0520 100%);
-  border:1px solid rgba(139,92,246,0.2);border-radius:20px;padding:22px;position:relative;overflow:hidden;
-}
-.balance-card::before{content:'';position:absolute;top:-60px;right:-60px;width:160px;height:160px;background:radial-gradient(circle,rgba(139,92,246,0.12),transparent);border-radius:50%}
-.balance-card::after{content:'';position:absolute;bottom:-40px;left:-30px;width:100px;height:100px;background:radial-gradient(circle,rgba(59,130,246,0.08),transparent);border-radius:50%}
+.header{padding:14px 16px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-mark{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--grn),var(--grn2));display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 0 20px var(--grn-glow)}
+.logo-text{font-size:18px;font-weight:800;letter-spacing:-.3px}.logo-text span{color:var(--grn)}
 
-.btn{border:none;border-radius:14px;padding:15px;color:#fff;font-weight:600;font-size:15px;width:100%;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
-.btn:active{transform:scale(0.97)}
-.btn-violet{background:linear-gradient(135deg,#7c3aed,#6d28d9)}
-.btn-violet::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);opacity:0;transition:.2s}
-.btn-ghost{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08)}
-.btn-green{background:linear-gradient(135deg,#059669,#047857)}
-.btn-red{background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.2);color:#f87171}
+.bal-card{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:22px 20px 16px;position:relative;overflow:hidden}
+.bal-card::before{content:'';position:absolute;inset:-1px;border-radius:20px;padding:1px;background:linear-gradient(135deg,rgba(34,197,94,.25),rgba(34,197,94,.05),rgba(34,197,94,.15));-webkit-mask:linear-gradient(#fff 0 0) content-box,linear-gradient(#fff 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.bal-card::after{content:'';position:absolute;top:-50px;right:-50px;width:140px;height:140px;background:radial-gradient(circle,rgba(34,197,94,.06),transparent);border-radius:50%;pointer-events:none}
+.bal-label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt2);font-weight:500;margin-bottom:10px}
+.pulse-dot{width:7px;height:7px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--grn-glow)}50%{box-shadow:0 0 0 6px transparent}}
+.bal-amount{font-size:36px;font-weight:800;letter-spacing:-.5px;line-height:1.1}
+.bal-sub{font-size:13px;color:var(--txt2);margin-top:6px;font-weight:500}
+.bal-sub span{color:var(--grn);font-weight:600}
+.twin-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:16px}
+.twin-btn{display:flex;align-items:center;justify-content:center;gap:6px;border:none;border-radius:12px;padding:11px 0;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.twin-btn:active{transform:scale(.97)}
+.twin-grn{background:rgba(34,197,94,.12);color:var(--grn);border:1px solid rgba(34,197,94,.15)}
+.twin-grey{background:rgba(240,244,248,.04);color:var(--txt2);border:1px solid var(--border)}
 
-.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,6,15,0.95);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-top:1px solid rgba(255,255,255,0.05);padding:6px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));z-index:100}
+.qr-banner{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;margin-top:12px;position:relative;overflow:hidden}
+.qr-banner:active{transform:scale(.98);background:var(--bg3)}
+.qr-banner::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(34,197,94,.04),transparent);pointer-events:none}
+.qr-icon-box{width:44px;height:44px;border-radius:12px;background:var(--grn-dim);border:1px solid rgba(34,197,94,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qr-icon-box svg{width:22px;height:22px;color:var(--grn)}
+.qr-content{flex:1}
+.qr-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:5px}
+.qr-title svg{width:14px;height:14px;color:var(--amber)}
+.qr-desc{font-size:12px;color:var(--txt2);margin-top:2px;display:flex;align-items:center;gap:4px}
+.qr-desc svg{width:12px;height:12px;color:var(--txt3)}
+.qr-arrow{color:var(--txt3)}
+.qr-arrow svg{width:20px;height:20px}
+
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.grid-item{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all .15s;position:relative;overflow:hidden}
+.grid-item:active{transform:scale(.96);background:var(--bg3)}
+.grid-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.grid-icon.green{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.1)}
+.grid-icon.blue{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.1)}
+.grid-icon.amber{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.1)}
+.grid-icon.red{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.1)}
+.grid-label{font-size:12px;font-weight:600;color:var(--txt2)}
+
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:18px 0 10px}
+.section-title{font-size:13px;font-weight:600;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px}
+.section-more{font-size:12px;color:var(--grn);cursor:pointer;font-weight:500}
+
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.card-row{display:flex;align-items:center;gap:12px;padding:12px 14px}
+.card-row+.card-row{border-top:1px solid var(--border)}
+
+.btn{border:none;border-radius:14px;padding:15px;color:#fff;font-weight:600;font-size:15px;width:100%;cursor:pointer;transition:all .15s}
+.btn:active{transform:scale(.97)}
+.btn-grn{background:linear-gradient(135deg,var(--grn),var(--grn2))}
+.btn-ghost{background:rgba(240,244,248,.04);border:1px solid var(--border);color:var(--txt2)}
+.btn-red{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.15);color:var(--red)}
+
+.nav{position:fixed;bottom:0;left:0;right:0;background:rgba(6,9,15,.95);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-top:1px solid var(--border);z-index:100;padding-bottom:max(6px,env(safe-area-inset-bottom))}
 .nav-inner{display:flex;justify-around;max-width:500px;margin:0 auto}
-.nav-i{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;cursor:pointer;opacity:0.3;transition:.2s;border-radius:12px}
-.nav-i.on{opacity:1;background:rgba(124,58,237,0.1)}
+.nav-i{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;width:100%;cursor:pointer;color:var(--txt3);transition:.2s;position:relative}
+.nav-i.on{color:var(--grn)}
 .nav-i svg{width:22px;height:22px}
-.nav-i span{font-size:10px;font-weight:500}
+.nav-i span{font-size:10px;font-weight:600}
+.nav-i.on::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:20px;height:2px;border-radius:1px;background:var(--grn)}
 
-.page{display:none;padding:16px}.page.on{display:block;animation:fadeIn .25s ease}
-@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
-
-input[type="number"],input[type="text"]{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 16px;color:#fff;font-size:15px;width:100%;outline:none;transition:border-color .2s}
-input:focus{border-color:rgba(124,58,237,0.5)}
-input::placeholder{color:rgba(255,255,255,0.2)}
-
-.pay-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(4px)}
-.pay-overlay.show{display:flex}
-.pay-sheet{background:linear-gradient(180deg,#111128,#0a0a1a);border-radius:24px 24px 0 0;padding:24px 20px 36px;width:100%;max-width:500px;animation:slideUp .3s ease;border-top:1px solid rgba(255,255,255,0.06)}
+.sheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.sheet-overlay.show{display:flex}
+.sheet{background:linear-gradient(180deg,var(--bg2),var(--bg));border-radius:20px 20px 0 0;padding:12px 20px 32px;width:100%;max-width:500px;animation:slideUp .3s ease}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:rgba(240,244,248,.1);margin:0 auto 16px}
 @keyframes slideUp{from{transform:translateY(100%)}to{transform:none}}
 
-.loader{width:48px;height:48px;border:3px solid rgba(255,255,255,0.08);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
-@keyframes spin{to{transform:rotate(360deg)}}
+.pay-center{text-align:center;margin-bottom:20px}
+.pay-icon{font-size:40px;margin-bottom:8px}
+.pay-title{font-size:18px;font-weight:700}
+.pay-sub{font-size:13px;color:var(--txt2);margin-top:4px}
+.pay-amount{font-size:36px;font-weight:800;margin:16px 0 4px}
+.pay-amount-sub{font-size:14px;color:var(--txt2)}
+.detail-row{display:flex;justify-content:space-between;padding:10px 0;font-size:13px}
+.detail-row+.detail-row{border-top:1px solid var(--border)}
+.detail-key{color:var(--txt2)}.detail-val{font-weight:600}
 
-.check-anim{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#059669,#10b981);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 0 40px rgba(16,185,129,0.3)}
+input[type="number"],input[type="text"]{background:rgba(240,244,248,.04);border:1px solid var(--border);border-radius:12px;padding:13px 14px;color:var(--txt);font-size:14px;width:100%;outline:none;transition:border-color .2s}
+input:focus{border-color:rgba(34,197,94,.4)}
+input::placeholder{color:var(--txt3)}
+.form-group{margin-bottom:12px}
+.form-label{font-size:12px;font-weight:600;color:var(--txt2);margin-bottom:6px}
+
+.switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.switch input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:rgba(240,244,248,.08);border-radius:12px;cursor:pointer;transition:.3s}
+.slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.switch input:checked+.slider{background:var(--grn)}
+.switch input:checked+.slider::before{transform:translateX(20px)}
+
+.settings-item{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer}
+.settings-item+.settings-item{border-top:1px solid var(--border)}
+.settings-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.settings-body{flex:1}
+.settings-name{font-size:14px;font-weight:600}
+.settings-desc{font-size:11px;color:var(--txt2);margin-top:1px}
+.settings-arrow{color:var(--txt3);font-size:16px}
+
+.check-anim{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--grn),var(--grn2));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 0 40px var(--grn-glow)}
 @keyframes popIn{from{transform:scale(0) rotate(-10deg)}to{transform:scale(1) rotate(0)}}
 
-.err-anim{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#dc2626,#ef4444);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;animation:popIn .4s cubic-bezier(.175,.885,.32,1.275);box-shadow:0 0 40px rgba(239,68,68,0.3)}
+.confetti-piece{position:fixed;width:8px;height:8px;border-radius:2px;z-index:999;animation:confettiFall 1.5s ease-out forwards}
+@keyframes confettiFall{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
 
-.tag{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600}
-.tag-green{background:rgba(16,185,129,0.15);color:#34d399}
-.tag-red{background:rgba(239,68,68,0.15);color:#f87171}
+.empty{text-align:center;padding:32px 0;color:var(--txt3);font-size:13px}
 
-.service-item{display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background .15s}
-.service-item:active{background:rgba(255,255,255,0.03)}
-.service-item+.service-item{border-top:1px solid rgba(255,255,255,0.04)}
+.ref-card{background:linear-gradient(135deg,rgba(34,197,94,.08),rgba(34,197,94,.02));border:1px solid rgba(34,197,94,.12);border-radius:16px;padding:16px;margin-bottom:12px}
+.ref-label{font-size:11px;color:var(--txt2);margin-bottom:6px}
+.ref-link{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.2);border-radius:10px;padding:10px 12px;font-size:13px;font-family:monospace;word-break:break-all;color:var(--grn)}
+.ref-copy{margin-left:auto;background:var(--grn);color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0}
 
-.amount-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.amount-btn{padding:14px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);color:#fff;font-weight:600;font-size:14px;cursor:pointer;transition:all .15s;text-align:center}
-.amount-btn:active{transform:scale(0.95);background:rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.3)}
+.profile-top{text-align:center;padding:20px 0 16px}
+.profile-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--grn),var(--grn2));display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;font-weight:800;color:#fff;box-shadow:0 0 30px var(--grn-glow)}
+.profile-name{font-size:18px;font-weight:700}
+.profile-id{font-size:12px;color:var(--txt2);margin-top:2px}
 
-.qr-frame{width:200px;height:200px;border-radius:16px;border:2px dashed rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;background:rgba(255,255,255,0.02);cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
-.qr-frame:active{border-color:rgba(124,58,237,0.4);background:rgba(124,58,237,0.05)}
-.qr-frame svg{width:48px;height:48px;opacity:0.3}
-.qr-frame.scanning{border-color:rgba(124,58,237,0.4);animation:pulse 1.5s infinite}
-@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(124,58,237,0.2)}50%{box-shadow:0 0 0 12px rgba(124,58,237,0)}}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.stats-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+.stats-val{font-size:20px;font-weight:700;margin-bottom:2px}
+.stats-lbl{font-size:11px;color:var(--txt2)}
 
-.rate-badge{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,0.05);font-size:11px;color:rgba(255,255,255,0.4);font-weight:500}
-.rate-dot{width:6px;height:6px;border-radius:50%;background:#34d399;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+.chat-modal{position:fixed;inset:0;background:var(--bg);z-index:250;display:none;flex-direction:column}
+.chat-modal.show{display:flex}
+.chat-header{padding:14px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.chat-messages{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.chat-msg{max-width:80%;padding:10px 14px;border-radius:14px;font-size:13px;line-height:1.5}
+.chat-msg.bot{background:var(--bg2);border:1px solid var(--border);align-self:flex-start;border-bottom-left-radius:4px}
+.chat-msg.user{background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.1);align-self:flex-end;border-bottom-right-radius:4px}
+.chat-input-bar{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+.chat-input{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:10px 14px;color:var(--txt);font-size:14px;outline:none}
+.chat-send{width:40px;height:40px;border-radius:12px;background:var(--grn);border:none;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px}
 </style>
 </head>
 <body class="safe">
 
 <!-- HOME -->
-<div id="p-home" class="page on">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-    <div>
-      <p style="font-size:11px;color:rgba(255,255,255,0.35)">Баланс</p>
-      <p id="bal" style="font-size:28px;font-weight:700;margin-top:2px">—</p>
+<div id="s-home" class="screen on">
+  <div class="header">
+    <div class="logo">
+      <div class="logo-mark">⚡</div>
+      <div class="logo-text">Crypto<span>QR</span></div>
     </div>
-    <div class="rate-badge"><span class="rate-dot"></span><span id="rate-top">загрузка...</span></div>
-  </div>
-
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px">
-    <div class="card" style="padding:16px;text-align:center;cursor:pointer" onclick="go('deposit')">
-      <div style="width:42px;height:42px;border-radius:12px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px">📥</div>
-      <p style="font-size:13px;font-weight:600">Пополнить</p>
-      <p style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:2px">CryptoBot, USDT</p>
-    </div>
-    <div class="card" style="padding:16px;text-align:center;cursor:pointer" onclick="go('withdraw')">
-      <div style="width:42px;height:42px;border-radius:12px;background:rgba(239,68,68,0.12);display:flex;align-items:center;justify-content:center;margin:0 auto 8px;font-size:18px">📤</div>
-      <p style="font-size:13px;font-weight:600">Вывести</p>
-      <p style="font-size:11px;color:rgba(255,255,255,0.25);margin-top:2px">USDT TRC20</p>
+    <div style="display:flex;align-items:center;gap:6px">
+      <div style="width:7px;height:7px;border-radius:50%;background:var(--grn);animation:pulse 2s infinite"></div>
+      <span style="font-size:11px;color:var(--txt2);font-weight:500" id="rate-top">—</span>
     </div>
   </div>
 
-  <p style="font-size:11px;font-weight:600;color:rgba(255,255,255,0.25);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-left:4px">Услуги</p>
-  <div class="card" style="overflow:hidden">
-    <div class="service-item" onclick="go('qr')">
-      <span style="font-size:22px">💳</span>
-      <div style="flex:1"><p style="font-size:14px;font-weight:500">Оплата по QR</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Сканируй и оплати в магазине</p></div>
-      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
-    </div>
-    <div class="service-item" onclick="go('steam')">
-      <span style="font-size:22px">🎮</span>
-      <div style="flex:1"><p style="font-size:14px;font-weight:500">Steam</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Пополнение баланса</p></div>
-      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
-    </div>
-    <div class="service-item" onclick="go('mobile')">
-      <span style="font-size:22px">📱</span>
-      <div style="flex:1"><p style="font-size:14px;font-weight:500">Мобильная связь</p><p style="font-size:11px;color:rgba(255,255,255,0.25)">Пополнение телефона</p></div>
-      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
+  <div class="bal-card">
+    <div class="bal-label"><div class="pulse-dot"></div><span>Баланс</span></div>
+    <div class="bal-amount" id="bal">---</div>
+    <div class="bal-sub">≈ <span id="bal-usdt">0.00 USDT</span></div>
+    <div class="twin-btns">
+      <button class="twin-btn twin-grn" onclick="openSheet('deposit')">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+        Пополнить
+      </button>
+      <button class="twin-btn twin-grey" onclick="openSheet('withdraw')">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+        Вывести
+      </button>
     </div>
   </div>
-</div>
 
-<!-- WALLET -->
-<div id="p-wallet" class="page">
-  <div class="balance-card" style="margin-bottom:16px">
-    <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px">Баланс кошелька</p>
-    <p id="w-bal" style="font-size:30px;font-weight:700">—</p>
-    <p id="w-rate" style="font-size:13px;color:rgba(255,255,255,0.3);margin-top:6px">—</p>
+  <div class="qr-banner" onclick="openQR()">
+    <div class="qr-icon-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h3"/><path d="M20 7V4h-3"/><path d="M4 17v3h3"/><path d="M20 17v3h-3"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+    </div>
+    <div class="qr-content">
+      <div class="qr-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        Оплатить по QR
+      </div>
+      <div class="qr-desc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+        Сканировать QR-код в магазине
+      </div>
+    </div>
+    <div class="qr-arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></div>
   </div>
-  <button class="btn btn-green" style="margin-bottom:10px" onclick="go('deposit')">📥 Пополнить</button>
-  <button class="btn btn-ghost" style="margin-bottom:10px" onclick="go('withdraw')">📤 Вывести</button>
-  <button class="btn btn-ghost" onclick="sendAction('get_balance')">🔄 Обновить баланс</button>
-</div>
 
-<!-- DEPOSIT -->
-<div id="p-deposit" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Пополнение</p>
-  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:16px">Выберите способ пополнения</p>
-  <div style="display:flex;flex-direction:column;gap:10px">
-    <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="sendAction('deposit_cryptobot')">
-      <div style="width:44px;height:44px;border-radius:12px;background:rgba(59,130,246,0.12);display:flex;align-items:center;justify-content:center;font-size:22px">🤖</div>
-      <div style="flex:1"><p style="font-weight:600">CryptoBot</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">USDT, BTC, TON, ETH</p></div>
-      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
-    </div>
-    <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="sendAction('deposit_xrocket')">
-      <div style="width:44px;height:44px;border-radius:12px;background:rgba(124,58,237,0.12);display:flex;align-items:center;justify-content:center;font-size:22px">🚀</div>
-      <div style="flex:1"><p style="font-weight:600">xRocket Pay</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">USDT, TON</p></div>
-      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
-    </div>
-    <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="sendAction('deposit_trc20')">
-      <div style="width:44px;height:44px;border-radius:12px;background:rgba(16,185,129,0.12);display:flex;align-items:center;justify-content:center;font-size:22px">🔗</div>
-      <div style="flex:1"><p style="font-weight:600">USDT TRC20</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">Прямой перевод</p></div>
-      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
-    </div>
-    <div class="card" style="padding:16px;display:flex;align-items:center;gap:14px;cursor:pointer" onclick="sendAction('deposit_bep20')">
-      <div style="width:44px;height:44px;border-radius:12px;background:rgba(245,158,11,0.12);display:flex;align-items:center;justify-content:center;font-size:22px">🔗</div>
-      <div style="flex:1"><p style="font-weight:600">USDT BEP20</p><p style="font-size:12px;color:rgba(255,255,255,0.3)">Прямой перевод</p></div>
-      <span style="color:rgba(255,255,255,0.12);font-size:18px">›</span>
-    </div>
+  <div class="grid">
+    <div class="grid-item" onclick="openQR()"><div class="grid-icon green">💳</div><span class="grid-label">Оплата</span></div>
+    <div class="grid-item" onclick="sendData({action:'open_shop'})"><div class="grid-icon blue">🛒</div><span class="grid-label">Магазин</span></div>
+    <div class="grid-item" onclick="switchScreen('history')"><div class="grid-icon amber">📜</div><span class="grid-label">История</span></div>
+    <div class="grid-item" onclick="switchScreen('stats')"><div class="grid-icon blue">📊</div><span class="grid-label">Статистика</span></div>
+    <div class="grid-item" onclick="switchScreen('referral')"><div class="grid-icon green">👥</div><span class="grid-label">Рефералы</span></div>
+    <div class="grid-item" onclick="switchScreen('profile')"><div class="grid-icon green">👤</div><span class="grid-label">Профиль</span></div>
+    <div class="grid-item" onclick="openSheet('calc')"><div class="grid-icon blue">🧮</div><span class="grid-label">Калькулятор</span></div>
+    <div class="grid-item" onclick="openChat()"><div class="grid-icon blue">💬</div><span class="grid-label">Поддержка</span></div>
+    <div class="grid-item" onclick="switchScreen('settings')" style="grid-column:1/-1"><div class="grid-icon amber">⚙️</div><span class="grid-label">Настройки</span></div>
   </div>
-</div>
 
-<!-- WITHDRAW -->
-<div id="p-withdraw" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Вывод USDT</p>
-  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:16px">Минимум 5 USDT, комиссия 1 USDT</p>
-  <div style="display:flex;flex-direction:column;gap:12px">
-    <input type="text" id="w-addr" placeholder="Адрес кошелька (USDT TRC20)">
-    <input type="number" id="w-amt" placeholder="Сумма USDT" step="0.01" min="5">
-    <button class="btn btn-violet" onclick="sendWithdraw()">📤 Вывести</button>
-  </div>
+  <div class="section-head"><span class="section-title">Последние операции</span><span class="section-more" onclick="switchScreen('history')">Все →</span></div>
+  <div class="card" id="home-tx-list"><div class="empty">Загрузка...</div></div>
 </div>
 
 <!-- QR PAY -->
-<div id="p-qr" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Оплата по QR</p>
-  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:20px">Введи сумму чека или сканируй QR</p>
-
-  <div class="qr-frame" id="qr-scan" onclick="scanQR()">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
-      <rect x="14" y="14" width="3" height="3"/><rect x="18" y="18" width="3" height="3"/><rect x="14" y="18" width="3" height="3"/><rect x="18" y="14" width="3" height="3"/>
-    </svg>
+<div id="s-qr" class="screen">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div onclick="switchScreen('home')" style="cursor:pointer;color:var(--txt2);font-size:20px">←</div>
+    <p style="font-size:18px;font-weight:700">Оплата по QR</p>
   </div>
-  <p id="qr-scan-hint" style="text-align:center;font-size:12px;color:rgba(255,255,255,0.2);margin-bottom:20px">Нажми чтобы сканировать QR</p>
-
-  <div style="text-align:center;font-size:12px;color:rgba(255,255,255,0.2);margin-bottom:12px">— или введи вручную —</div>
-
-  <input type="number" id="qr-amt" placeholder="Сумма чека в ₽" step="1" min="1" oninput="calcPay()">
-
-  <div id="qr-calc" style="display:none;margin-top:14px;padding:18px;background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.15);border-radius:16px;text-align:center">
-    <p style="font-size:11px;color:rgba(255,255,255,0.35);margin-bottom:6px">К списанию с баланса</p>
-    <p id="qr-usdt" style="font-size:32px;font-weight:700;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent">0 USDT</p>
-    <div style="display:flex;justify-content:center;gap:12px;margin-top:8px">
-      <span style="font-size:11px;color:rgba(255,255,255,0.25)" id="qr-rate-info"></span>
-    </div>
+  <div style="width:180px;height:180px;border-radius:16px;border:2px dashed var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;background:var(--bg2);cursor:pointer;transition:all .2s" id="qr-frame" onclick="scanQR()">
+    <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" style="color:var(--txt3)"><path d="M4 7V4h3"/><path d="M20 7V4h-3"/><path d="M4 17v3h3"/><path d="M20 17v3h-3"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
   </div>
-  <button class="btn btn-violet" style="margin-top:14px;display:none" id="qr-pay-btn" onclick="doPay()">💳 Оплатить</button>
-</div>
-
-<!-- STEAM -->
-<div id="p-steam" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Пополнение Steam</p>
-  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:16px">Выбери сумму пополнения</p>
-  <div class="amount-grid" style="margin-bottom:14px">
-    <button class="amount-btn" onclick="pickSteam(this,100)">100 ₽</button>
-    <button class="amount-btn" onclick="pickSteam(this,300)">300 ₽</button>
-    <button class="amount-btn" onclick="pickSteam(this,500)">500 ₽</button>
-    <button class="amount-btn" onclick="pickSteam(this,1000)">1 000 ₽</button>
-    <button class="amount-btn" onclick="pickSteam(this,2000)">2 000 ₽</button>
-    <button class="amount-btn" onclick="pickSteam(this,5000)">5 000 ₽</button>
+  <p style="text-align:center;font-size:12px;color:var(--txt3);margin-bottom:20px">Нажми чтобы сканировать</p>
+  <div style="text-align:center;font-size:11px;color:var(--txt3);margin-bottom:12px">— или введи вручную —</div>
+  <div class="form-group">
+    <input type="number" id="qr-amt" placeholder="Сумма чека в ₽" oninput="calcPay()">
   </div>
-  <input type="number" id="steam-custom" placeholder="Своя сумма ₽" step="1" min="50" oninput="pickSteamCustom()" style="margin-bottom:10px">
-  <input type="text" id="steam-id" placeholder="Steam ID (64)" style="margin-bottom:10px">
-  <div id="steam-info" style="display:none;padding:14px;margin-bottom:14px" class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:13px;color:rgba(255,255,255,0.4)">К оплате</span>
-      <span id="steam-usdt" style="font-size:18px;font-weight:700;color:#a78bfa"></span>
-    </div>
+  <div id="qr-calc" style="display:none;padding:16px;background:var(--bg2);border:1px solid rgba(34,197,94,.12);border-radius:14px;text-align:center;margin-bottom:14px">
+    <p style="font-size:11px;color:var(--txt2)">К списанию</p>
+    <p id="qr-usdt" style="font-size:28px;font-weight:800;color:var(--grn);margin:4px 0"></p>
+    <p id="qr-rate" style="font-size:11px;color:var(--txt3)"></p>
   </div>
-  <button class="btn btn-violet" onclick="sendSteam()">🎮 Пополнить</button>
-</div>
-
-<!-- MOBILE -->
-<div id="p-mobile" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:4px">Мобильная связь</p>
-  <p style="font-size:13px;color:rgba(255,255,255,0.3);margin-bottom:16px">Пополнение телефона</p>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px" id="op-grid">
-    <button class="amount-btn" onclick="pickOp(this,'МТС')" style="font-size:13px">📱 МТС</button>
-    <button class="amount-btn" onclick="pickOp(this,'МегаФон')" style="font-size:13px">📱 МегаФон</button>
-    <button class="amount-btn" onclick="pickOp(this,'Билайн')" style="font-size:13px">📱 Билайн</button>
-    <button class="amount-btn" onclick="pickOp(this,'Теле2')" style="font-size:13px">📱 Теле2</button>
-  </div>
-  <input type="text" id="mob-phone" placeholder="Номер телефона" style="margin-bottom:10px">
-  <input type="number" id="mob-amt" placeholder="Сумма в ₽ (10–15000)" min="10" max="15000" style="margin-bottom:14px">
-  <button class="btn btn-violet" onclick="sendMobile()">📱 Пополнить</button>
+  <button class="btn btn-grn" id="qr-pay-btn" style="display:none" onclick="doPay()">💳 Оплатить</button>
 </div>
 
 <!-- HISTORY -->
-<div id="p-history" class="page">
-  <p style="font-size:20px;font-weight:700;margin-bottom:16px">История операций</p>
-  <p style="font-size:13px;color:rgba(255,255,255,0.3)">Загрузка...</p>
-  <button class="btn btn-ghost" style="margin-top:12px" onclick="sendAction('get_history')">🔄 Загрузить историю</button>
+<div id="s-history" class="screen">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div onclick="switchScreen('home')" style="cursor:pointer;color:var(--txt2);font-size:20px">←</div>
+    <p style="font-size:18px;font-weight:700">История</p>
+  </div>
+  <div class="card" id="tx-list-all"><div class="empty">Загрузка...</div></div>
+</div>
+
+<!-- STATS -->
+<div id="s-stats" class="screen">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div onclick="switchScreen('home')" style="cursor:pointer;color:var(--txt2);font-size:20px">←</div>
+    <p style="font-size:18px;font-weight:700">Статистика</p>
+  </div>
+  <div class="stats-grid">
+    <div class="stats-card"><div class="stats-val" style="color:var(--red)">—</div><div class="stats-lbl">Расходы</div></div>
+    <div class="stats-card"><div class="stats-val" style="color:var(--grn)">—</div><div class="stats-lbl">Доходы</div></div>
+    <div class="stats-card"><div class="stats-val" style="color:var(--amber)">—</div><div class="stats-lbl">Выводы</div></div>
+    <div class="stats-card"><div class="stats-val" style="color:var(--blue)">—</div><div class="stats-lbl">Бонусы</div></div>
+  </div>
+  <p style="text-align:center;color:var(--txt3);font-size:13px;margin-top:20px">Графики появятся после первых операций</p>
+</div>
+
+<!-- REFERRAL -->
+<div id="s-referral" class="screen">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div onclick="switchScreen('home')" style="cursor:pointer;color:var(--txt2);font-size:20px">←</div>
+    <p style="font-size:18px;font-weight:700">Рефералы</p>
+  </div>
+  <div class="ref-card">
+    <div class="ref-label">Ваша реферальная ссылка</div>
+    <div class="ref-link">
+      <span id="ref-link" style="flex:1">Загрузка...</span>
+      <button class="ref-copy" onclick="copyRef()">Копировать</button>
+    </div>
+  </div>
+  <div class="stats-grid">
+    <div class="stats-card"><div class="stats-val" style="color:var(--grn)">0</div><div class="stats-lbl">Приглашено</div></div>
+    <div class="stats-card"><div class="stats-val" style="color:var(--amber)">0 USDT</div><div class="stats-lbl">Заработано</div></div>
+  </div>
+  <div style="padding:16px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-top:12px">
+    <p style="font-size:13px;font-weight:600;margin-bottom:8px">Как это работает?</p>
+    <p style="font-size:12px;color:var(--txt2);line-height:1.5">Поделись ссылкой с друзьями. Когда они пополнят баланс — ты получишь бонус 1 USDT на каждого реферала.</p>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div id="s-profile" class="screen">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+    <div onclick="switchScreen('home')" style="cursor:pointer;color:var(--txt2);font-size:20px">←</div>
+    <p style="font-size:18px;font-weight:700">Профиль</p>
+  </div>
+  <div class="profile-top">
+    <div class="profile-avatar" id="prof-avatar">?</div>
+    <div class="profile-name" id="prof-name">Загрузка...</div>
+    <div class="profile-id" id="prof-id">@...</div>
+  </div>
+  <div class="stats-grid">
+    <div class="stats-card"><div class="stats-val" style="color:var(--grn)" id="prof-bal">—</div><div class="stats-lbl">USDT</div></div>
+    <div class="stats-card"><div class="stats-val" style="color:var(--blue)" id="prof-rate">—</div><div class="stats-lbl">Курс ₽/USDT</div></div>
+  </div>
+  <div class="card" style="margin-top:12px">
+    <div class="settings-item" onclick="openQR()"><div class="settings-icon" style="background:var(--grn-dim)">📱</div><div class="settings-body"><div class="settings-name">Сканировать QR</div><div class="settings-desc">Оплата в магазине</div></div><span class="settings-arrow">›</span></div>
+    <div class="settings-item" onclick="openSheet('deposit')"><div class="settings-icon" style="background:rgba(34,197,94,.1)">💰</div><div class="settings-body"><div class="settings-name">Пополнить</div><div class="settings-desc">CryptoBot, xRocket, USDT</div></div><span class="settings-arrow">›</span></div>
+    <div class="settings-item" onclick="openSheet('withdraw')"><div class="settings-icon" style="background:rgba(245,158,11,.1)">💸</div><div class="settings-body"><div class="settings-name">Вывести</div><div class="settings-desc">USDT TRC20</div></div><span class="settings-arrow">›</span></div>
+    <div class="settings-item" onclick="switchScreen('settings')"><div class="settings-icon" style="background:rgba(240,244,248,.05)">⚙️</div><div class="settings-body"><div class="settings-name">Настройки</div><div class="settings-desc">Тема, вибрация, конфетти</div></div><span class="settings-arrow">›</span></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="s-settings" class="screen">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+    <div onclick="switchScreen('home')" style="cursor:pointer;color:var(--txt2);font-size:20px">←</div>
+    <p style="font-size:18px;font-weight:700">Настройки</p>
+  </div>
+  <div class="card">
+    <div class="settings-item" onclick="openSheet('theme')">
+      <div class="settings-icon" style="background:rgba(240,244,248,.05)">🎨</div>
+      <div class="settings-body"><div class="settings-name">Оформление</div><div class="settings-desc" id="cur-theme">Тёмная</div></div>
+      <span class="settings-arrow">›</span>
+    </div>
+    <div class="settings-item">
+      <div class="settings-icon" style="background:rgba(59,130,246,.1)">🎉</div>
+      <div class="settings-body"><div class="settings-name">Конфетти при оплате</div><div class="settings-desc">Красивый взрыв после успеха</div></div>
+      <label class="switch"><input type="checkbox" id="set-confetti" checked onchange="saveSetting('confetti')"><span class="slider"></span></label>
+    </div>
+    <div class="settings-item">
+      <div class="settings-icon" style="background:rgba(245,158,11,.1)">📳</div>
+      <div class="settings-body"><div class="settings-name">Вибрация</div><div class="settings-desc">Отклик при нажатиях</div></div>
+      <label class="switch"><input type="checkbox" id="set-haptic" checked onchange="saveSetting('haptic')"><span class="slider"></span></label>
+    </div>
+    <div class="settings-item">
+      <div class="settings-icon" style="background:rgba(34,197,94,.1)">🔄</div>
+      <div class="settings-body"><div class="settings-name">Автообновление</div><div class="settings-desc">Курс каждые 15 секунд</div></div>
+      <label class="switch"><input type="checkbox" id="set-autorefresh" checked onchange="saveSetting('autorefresh')"><span class="slider"></span></label>
+    </div>
+  </div>
+</div>
+
+<!-- DEPOSIT SHEET -->
+<div class="sheet-overlay" id="sh-deposit" onclick="closeSheet('deposit',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="pay-center"><div class="pay-icon">💰</div><div class="pay-title">Пополнение</div><div class="pay-sub">Выберите способ</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <button class="twin-btn twin-grn" style="width:100%;padding:14px;justify-content:center" onclick="sendData({action:'deposit_cryptobot'})">🤖 Чек (CryptoBot)</button>
+      <button class="twin-btn twin-grey" style="width:100%;padding:14px;justify-content:center;color:var(--txt)" onclick="sendData({action:'deposit_xrocket'})">🚀 Чек (xRocket)</button>
+      <button class="twin-btn twin-grey" style="width:100%;padding:14px;justify-content:center;color:var(--txt)" onclick="sendData({action:'deposit_trc20'})">🔗 USDT TRC20</button>
+    </div>
+    <button class="btn btn-ghost" onclick="closeSheet('deposit')">Отмена</button>
+  </div>
+</div>
+
+<!-- WITHDRAW SHEET -->
+<div class="sheet-overlay" id="sh-withdraw" onclick="closeSheet('withdraw',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="pay-center"><div class="pay-icon">💸</div><div class="pay-title">Вывод средств</div><div class="pay-sub">Минимум 5 USDT</div></div>
+    <div class="form-group"><label class="form-label">Адрес кошелька (USDT TRC20)</label><input type="text" id="wd-addr" placeholder="TR..."></div>
+    <div class="form-group"><label class="form-label">Сумма USDT</label><input type="number" id="wd-amt" placeholder="5.00" step="0.01" min="5"></div>
+    <button class="btn btn-grn" onclick="sendWithdraw()">💸 Вывести</button>
+    <button class="btn btn-ghost" style="margin-top:8px" onclick="closeSheet('withdraw')">Отмена</button>
+  </div>
+</div>
+
+<!-- CALC SHEET -->
+<div class="sheet-overlay" id="sh-calc" onclick="closeSheet('calc',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="pay-center"><div class="pay-icon">🧮</div><div class="pay-title">Калькулятор</div><div class="pay-sub">RUB ↔ USDT</div></div>
+    <div style="text-align:center;margin-bottom:16px;font-size:13px;color:var(--txt2)">Курс: <span id="calc-rate" style="color:var(--grn);font-weight:600">—</span></div>
+    <div class="form-group"><label class="form-label">Сумма в RUB</label><input type="number" id="calc-rub" placeholder="0.00" oninput="calcConvert('rub')"></div>
+    <div class="form-group"><label class="form-label">Сумма в USDT</label><input type="number" id="calc-usdt" placeholder="0.00" oninput="calcConvert('usdt')"></div>
+    <div style="text-align:center;margin:16px 0;font-size:14px;color:var(--txt2)" id="calc-result">≈ 0.00 USDT</div>
+    <button class="btn btn-ghost" onclick="closeSheet('calc')">Закрыть</button>
+  </div>
+</div>
+
+<!-- THEME SHEET -->
+<div class="sheet-overlay" id="sh-theme" onclick="closeSheet('theme',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
+    <div class="pay-center"><div class="pay-icon">✨</div><div class="pay-title">Оформление</div><div class="pay-sub">Выберите тему</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <button class="twin-btn twin-grn" style="width:100%;padding:14px;justify-content:center" onclick="setTheme('dark')">🌑 Тёмная</button>
+      <button class="twin-btn twin-grey" style="width:100%;padding:14px;justify-content:center;color:var(--txt)" onclick="setTheme('green')">💚 Неон зелёный</button>
+      <button class="twin-btn twin-grey" style="width:100%;padding:14px;justify-content:center;color:var(--txt)" onclick="setTheme('light')">☀️ Светлая</button>
+      <button class="twin-btn twin-grey" style="width:100%;padding:14px;justify-content:center;color:var(--txt)" onclick="setTheme('cyber')">⚡ Cyberpunk</button>
+    </div>
+    <button class="btn btn-ghost" onclick="closeSheet('theme')">Закрыть</button>
+  </div>
 </div>
 
 <!-- PAY OVERLAY -->
-<div class="pay-overlay" id="pay-overlay">
-  <div class="pay-sheet">
-    <div style="width:40px;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;margin:0 auto 20px"></div>
-
+<div class="sheet-overlay" id="sh-pay" onclick="closeSheet('pay',event)">
+  <div class="sheet" onclick="event.stopPropagation()">
+    <div class="sheet-handle"></div>
     <div id="pay-loading" style="display:none;text-align:center;padding:24px 0">
-      <div class="loader"></div>
-      <p style="margin-top:16px;color:rgba(255,255,255,0.5);font-size:14px">Отправка запроса...</p>
+      <div style="width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--grn);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto"></div>
+      <p style="margin-top:14px;color:var(--txt2);font-size:14px">Отправка запроса...</p>
     </div>
-
     <div id="pay-confirm">
-      <p style="font-size:17px;font-weight:600;margin-bottom:20px;text-align:center">Подтверди оплату</p>
-      <div style="padding:16px;border-radius:14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.04);margin-bottom:20px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-          <span style="color:rgba(255,255,255,0.35);font-size:13px">Сумма чека</span>
-          <span id="po-rub" style="font-weight:600;font-size:14px"></span>
-        </div>
-        <div style="height:1px;background:rgba(255,255,255,0.04);margin-bottom:10px"></div>
-        <div style="display:flex;justify-content:space-between;margin-bottom:10px">
-          <span style="color:rgba(255,255,255,0.35);font-size:13px">Спишется</span>
-          <span id="po-usdt" style="font-weight:700;color:#a78bfa;font-size:16px"></span>
-        </div>
-        <div style="display:flex;justify-content:space-between">
-          <span style="color:rgba(255,255,255,0.35);font-size:13px">Курс</span>
-          <span id="po-rate" style="font-size:13px;color:rgba(255,255,255,0.5)"></span>
-        </div>
+      <div class="pay-center"><div class="pay-icon">💳</div><div class="pay-title">Подтверди оплату</div></div>
+      <div style="padding:14px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;margin-bottom:16px">
+        <div class="detail-row"><span class="detail-key">Сумма чека</span><span class="detail-val" id="po-rub"></span></div>
+        <div class="detail-row"><span class="detail-key">Спишется</span><span class="detail-val" style="color:var(--grn)" id="po-usdt"></span></div>
+        <div class="detail-row"><span class="detail-key">Курс</span><span class="detail-val" style="color:var(--txt2)" id="po-rate"></span></div>
       </div>
-      <button class="btn btn-violet" onclick="confirmPay()">💳 Оплатить</button>
-      <button class="btn btn-red" style="margin-top:8px" onclick="closePay()">Отмена</button>
+      <button class="btn btn-grn" onclick="confirmPay()">💳 Оплатить</button>
+      <button class="btn btn-ghost" style="margin-top:8px" onclick="closeSheet('pay')">Отмена</button>
     </div>
-
     <div id="pay-success" style="display:none;text-align:center;padding:24px 0">
       <div class="check-anim"><span style="font-size:36px;color:#fff">✓</span></div>
-      <p style="font-size:18px;font-weight:700;margin-bottom:4px">Запрос отправлен!</p>
-      <p id="ps-info" style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px"></p>
-      <button class="btn btn-ghost" onclick="closePay()">Готово</button>
+      <p style="font-size:18px;font-weight:700;margin-bottom:4px">Оплачено!</p>
+      <p id="ps-info" style="font-size:13px;color:var(--txt2);margin-bottom:16px"></p>
+      <button class="btn btn-ghost" onclick="closeSheet('pay')">Готово</button>
     </div>
+  </div>
+</div>
 
-    <div id="pay-error" style="display:none;text-align:center;padding:24px 0">
-      <div class="err-anim"><span style="font-size:36px;color:#fff">✕</span></div>
-      <p style="font-size:18px;font-weight:700;margin-bottom:4px">Ошибка</p>
-      <p id="pe-info" style="font-size:13px;color:rgba(255,255,255,0.4);margin-bottom:16px"></p>
-      <button class="btn btn-ghost" onclick="closePay()">Закрыть</button>
-    </div>
+<!-- SUPPORT CHAT -->
+<div class="chat-modal" id="chat-modal">
+  <div class="chat-header">
+    <div style="cursor:pointer;color:var(--txt2);font-size:20px" onclick="closeChat()">←</div>
+    <p style="font-size:16px;font-weight:600">Поддержка</p>
+  </div>
+  <div class="chat-messages" id="chat-msgs">
+    <div class="chat-msg bot">👋 Привет! Я бот поддержки CryptoQR. Чем могу помочь?</div>
+  </div>
+  <div class="chat-input-bar">
+    <input class="chat-input" id="chat-input" placeholder="Сообщение..." onkeydown="if(event.key==='Enter')sendChat()">
+    <button class="chat-send" onclick="sendChat()">↑</button>
   </div>
 </div>
 
 <!-- BOTTOM NAV -->
 <div class="nav">
   <div class="nav-inner">
-    <div class="nav-i on" onclick="go('home')" data-p="home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    <div class="nav-i on" onclick="switchScreen('home')" data-s="home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span>Главная</span>
     </div>
-    <div class="nav-i" onclick="go('wallet')" data-p="wallet">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/></svg>
-      <span>Кошелёк</span>
+    <div class="nav-i" onclick="scanQR()" data-s="scan">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h3"/><path d="M20 7V4h-3"/><path d="M4 17v3h3"/><path d="M20 17v3h-3"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="12" y1="8" x2="12" y2="16"/></svg>
+      <span>Скан</span>
     </div>
-    <div class="nav-i" onclick="go('qr')" data-p="qr">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="4" height="4"/></svg>
-      <span>Оплата</span>
-    </div>
-    <div class="nav-i" onclick="go('history')" data-p="history">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>
+    <div class="nav-i" onclick="switchScreen('history')" data-s="history">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span>История</span>
     </div>
   </div>
 </div>
 
+<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+
 <script>
 const TG=window.Telegram?.WebApp;
 const MK=3.5, FEE=0.50;
-let R=92, PAY_RUB=0, PAY_USDT=0, STEAM_RUB=0, MOB_OP='';
+let R=92, PAY_RUB=0, PAY_USDT=0;
 
-if(TG){TG.ready();TG.expand();TG.setHeaderColor('#06060f');TG.setBackgroundColor('#06060f')}
+const settings=JSON.parse(localStorage.getItem('cqr_settings')||'{"confetti":true,"haptic":true,"autorefresh":true,"theme":"dark"}');
 
-function haptic(t){try{TG?.HapticFeedback?.impactOccurred(t)}catch(e){}}
-
-function go(p){
-  document.querySelectorAll('.page').forEach(e=>e.classList.remove('on'));
-  document.getElementById('p-'+p)?.classList.add('on');
-  document.querySelectorAll('.nav-i').forEach(n=>{n.classList.remove('on');if(n.dataset.p===p)n.classList.add('on')});
-  haptic('light');
-  if(p==='qr'){document.getElementById('qr-amt').value='';document.getElementById('qr-calc').style.display='none';document.getElementById('qr-pay-btn').style.display='none'}
+if(TG){
+  TG.ready();TG.expand();
+  TG.setHeaderColor('#06090f');
+  TG.setBackgroundColor('#06090f');
+  try{TG.MainButton.hide()}catch(e){}
 }
 
-function sendData(data){try{TG?.sendData(JSON.stringify(data))}catch(e){alert('Ошибка: '+e.message)}}
+function saveSetting(k){settings[k]=document.getElementById('set-'+k).checked;localStorage.setItem('cqr_settings',JSON.stringify(settings))}
+function loadSettings(){Object.keys(settings).forEach(k=>{const el=document.getElementById('set-'+k);if(el)el.checked=settings[k]})}
 
-function sendAction(action){sendData({action})}
+function haptic(t){if(!settings.haptic)return;try{TG?.HapticFeedback?.impactOccurred(t)}catch(e){}}
+
+function sendData(d){try{TG?.sendData(JSON.stringify(d))}catch(e){}}
+
+function switchScreen(s){
+  document.querySelectorAll('.screen').forEach(e=>e.classList.remove('on'));
+  document.getElementById('s-'+s)?.classList.add('on');
+  document.querySelectorAll('.nav-i').forEach(n=>{n.classList.remove('on');if(n.dataset.s===s)n.classList.add('on')});
+  haptic('light');
+}
+
+function openSheet(s){document.getElementById('sh-'+s)?.classList.add('show');haptic('light')}
+function closeSheet(s,e){if(e&&e.target!==e.currentTarget)return;document.getElementById('sh-'+s)?.classList.remove('show')}
 
 async function fetchRate(){
-  const sources=[
+  const srcs=[
     async()=>{const r=await fetch('https://api.coingecko.com/api/v3/simple/price?ids=tether&vs_currencies=rub');const d=await r.json();return d.tether?.rub},
     async()=>{const r=await fetch('https://api.binance.com/api/v3/ticker/price?symbol=USDTTRY');const d=await r.json();const tr=parseFloat(d.price);const r2=await fetch('https://api.exchangerate-api.com/v4/latest/TRY');const d2=await r2.json();return tr*d2.rates?.RUB},
     async()=>{const r=await fetch('https://min-api.cryptocompare.com/data/price?fsym=USDT&tsyms=RUB');const d=await r.json();return d.RUB},
     async()=>{const r=await fetch('https://api.exchangerate-api.com/v4/latest/USDT');const d=await r.json();return d.rates?.RUB},
   ];
-  for(const fn of sources){try{const v=await fn();if(v&&v>50&&v<200){R=v;updRateDisplay();return}}catch(e){}}
-  updRateDisplay();
+  for(const fn of srcs){try{const v=await fn();if(v&&v>50&&v<200){R=v;updRate();return}}catch(e){}}
+  updRate();
 }
 
-function updRateDisplay(){
+function updRate(){
   document.getElementById('rate-top').textContent=R.toFixed(2)+' ₽/USDT';
-  document.getElementById('w-rate').textContent='Курс: '+R.toFixed(2)+' ₽/USDT';
+  document.getElementById('calc-rate').textContent=R.toFixed(2)+' ₽/USDT';
+  document.getElementById('po-rate')&&(document.getElementById('po-rate').textContent=R.toFixed(2)+' ₽/USDT');
 }
 
 function calcPay(){
@@ -359,42 +508,41 @@ function calcPay(){
   const box=document.getElementById('qr-calc');
   const btn=document.getElementById('qr-pay-btn');
   if(!v||v<=0){box.style.display='none';btn.style.display='none';return}
-  box.style.display='block';
-  btn.style.display='block';
+  box.style.display='block';btn.style.display='block';
   const u=(v/R*(1+MK/100)+FEE);
-  PAY_RUB=v; PAY_USDT=u;
+  PAY_RUB=v;PAY_USDT=u;
   document.getElementById('qr-usdt').textContent=u.toFixed(2)+' USDT';
-  document.getElementById('qr-rate-info').textContent=R.toFixed(2)+' ₽/USDT + '+MK+'% + '+FEE+'$';
+  document.getElementById('qr-rate').textContent=R.toFixed(2)+' ₽/USDT + '+MK+'% + '+FEE+'$';
+}
+
+function calcConvert(from){
+  if(from==='rub'){const v=parseFloat(document.getElementById('calc-rub').value);document.getElementById('calc-usdt').value=v?(v/R).toFixed(2):'';document.getElementById('calc-result').textContent='≈ '+(v?(v/R).toFixed(2):'0.00')+' USDT'}
+  else{const v=parseFloat(document.getElementById('calc-usdt').value);document.getElementById('calc-rub').value=v?(v*R).toFixed(2):'';document.getElementById('calc-result').textContent='≈ '+(v?(v*R).toFixed(2):'0.00')+' ₽'}
 }
 
 function scanQR(){
-  if(!TG){alert('Скан доступен только в Telegram');return}
+  if(!TG){alert('Доступно только в Telegram');return}
   haptic('medium');
-  const frame=document.getElementById('qr-scan');
-  frame.classList.add('scanning');
-  document.getElementById('qr-scan-hint').textContent='Сканирование...';
-
-  TG.showScanQrPopup({text:'Наведи камеру на QR-код'},(text)=>{
-    frame.classList.remove('scanning');
-    document.getElementById('qr-scan-hint').textContent='Нажми чтобы сканировать QR';
+  TG.showScanQrPopup({text:'Наведи на QR-код'},(text)=>{
     TG.closeScanQrPopup();
     const num=parseFloat(text.replace(/[^0-9.]/g,''));
-    if(num&&num>0){document.getElementById('qr-amt').value=num;calcPay();haptic('success')}
-    else{document.getElementById('qr-scan-hint').textContent='Не удалось распознать сумму';haptic('error')}
+    if(num&&num>0){switchScreen('qr');setTimeout(()=>{document.getElementById('qr-amt').value=num;calcPay()},100);haptic('success')}
+    else{alert('Не удалось распознать сумму из QR');haptic('error')}
     return true;
   });
 }
 
+function openQR(){switchScreen('qr')}
+
 function doPay(){
-  if(!PAY_RUB){alert('Введите сумму чека');return}
+  if(!PAY_RUB){alert('Введите сумму');return}
   document.getElementById('po-rub').textContent=PAY_RUB.toFixed(2)+' ₽';
   document.getElementById('po-usdt').textContent=PAY_USDT.toFixed(4)+' USDT';
   document.getElementById('po-rate').textContent=R.toFixed(2)+' ₽/USDT';
   document.getElementById('pay-confirm').style.display='block';
   document.getElementById('pay-loading').style.display='none';
   document.getElementById('pay-success').style.display='none';
-  document.getElementById('pay-error').style.display='none';
-  document.getElementById('pay-overlay').classList.add('show');
+  openSheet('pay');
   haptic('medium');
 }
 
@@ -408,66 +556,79 @@ function confirmPay(){
     document.getElementById('pay-success').style.display='block';
     document.getElementById('ps-info').textContent=PAY_RUB.toFixed(2)+' ₽ → '+PAY_USDT.toFixed(2)+' USDT';
     haptic('success');
-  },500);
-}
-
-function closePay(){document.getElementById('pay-overlay').classList.remove('show');PAY_RUB=0;PAY_USDT=0}
-
-function pickSteam(el,rub){
-  document.querySelectorAll('#p-steam .amount-btn').forEach(b=>b.style.borderColor='rgba(255,255,255,0.06)');
-  el.style.borderColor='rgba(124,58,237,0.5)';
-  STEAM_RUB=rub;
-  const u=(rub/R*(1+MK/100)+FEE);
-  document.getElementById('steam-info').style.display='block';
-  document.getElementById('steam-usdt').textContent=u.toFixed(2)+' USDT';
-  document.getElementById('steam-custom').value='';
-}
-function pickSteamCustom(){
-  const v=parseFloat(document.getElementById('steam-custom').value);
-  if(!v||v<=0){document.getElementById('steam-info').style.display='none';return}
-  STEAM_RUB=v;
-  const u=(v/R*(1+MK/100)+FEE);
-  document.getElementById('steam-info').style.display='block';
-  document.getElementById('steam-usdt').textContent=u.toFixed(2)+' USDT';
-  document.querySelectorAll('#p-steam .amount-btn').forEach(b=>b.style.borderColor='rgba(255,255,255,0.06)');
-}
-function sendSteam(){
-  const sid=document.getElementById('steam-id').value.trim();
-  if(!STEAM_RUB){alert('Выбери сумму');return}
-  if(!sid){alert('Введи Steam ID');return}
-  sendData({action:'steam',amount_rub:STEAM_RUB,steam_id:sid});
-  haptic('success');
-  alert('Запрос отправлен! Проверь чат с ботом.');
-}
-
-function pickOp(el,name){
-  document.querySelectorAll('#op-grid .amount-btn').forEach(b=>b.style.borderColor='rgba(255,255,255,0.06)');
-  el.style.borderColor='rgba(124,58,237,0.5)';
-  MOB_OP=name;
-}
-function sendMobile(){
-  if(!MOB_OP){alert('Выбери оператора');return}
-  const phone=document.getElementById('mob-phone').value.trim();
-  const amt=parseFloat(document.getElementById('mob-amt').value);
-  if(!phone){alert('Введи номер телефона');return}
-  if(!amt||amt<10||amt>15000){alert('Сумма от 10 до 15 000 ₽');return}
-  sendData({action:'mobile',operator:MOB_OP,phone,amount_rub:amt});
-  haptic('success');
-  alert('Запрос отправлен! Проверь чат с ботом.');
+    if(settings.confetti)fireConfetti();
+  },600);
 }
 
 function sendWithdraw(){
-  const addr=document.getElementById('w-addr').value.trim();
-  const amt=parseFloat(document.getElementById('w-amt').value);
-  if(!addr){alert('Введи адрес кошелька');return}
+  const addr=document.getElementById('wd-addr').value.trim();
+  const amt=parseFloat(document.getElementById('wd-amt').value);
+  if(!addr){alert('Введи адрес');return}
   if(!amt||amt<5){alert('Минимум 5 USDT');return}
   sendData({action:'withdraw',address:addr,amount_usdt:amt});
   haptic('success');
+  closeSheet('withdraw');
   alert('Запрос вывода отправлен!');
 }
 
-fetchRate();
-setInterval(fetchRate,60000);
+function fireConfetti(){
+  const colors=['#22c55e','#16a34a','#f59e0b','#3b82f6','#ef4444','#a78bfa','#f472b6'];
+  for(let i=0;i<40;i++){
+    const el=document.createElement('div');
+    el.className='confetti-piece';
+    el.style.left=Math.random()*100+'vw';
+    el.style.top='-10px';
+    el.style.background=colors[Math.floor(Math.random()*colors.length)];
+    el.style.animationDelay=Math.random()*.5+'s';
+    el.style.animationDuration=(1+Math.random())+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),2000);
+  }
+}
+
+function openChat(){document.getElementById('chat-modal').classList.add('show')}
+function closeChat(){document.getElementById('chat-modal').classList.remove('show')}
+function sendChat(){
+  const input=document.getElementById('chat-input');
+  const text=input.value.trim();
+  if(!text)return;
+  const msgs=document.getElementById('chat-msgs');
+  msgs.innerHTML+=`<div class="chat-msg user">${text}</div>`;
+  input.value='';
+  msgs.scrollTop=msgs.scrollHeight;
+  sendData({action:'support_message',text});
+  setTimeout(()=>{msgs.innerHTML+=`<div class="chat-msg bot">📩 Сообщение отправлено. Ожидайте ответ в боте.</div>`;msgs.scrollTop=msgs.scrollHeight},500);
+}
+
+function copyRef(){
+  const link='https://t.me/CryptoQR_Robot?start=ref_'+(TG?.initDataUnsafe?.user?.id||'');
+  navigator.clipboard?.writeText(link);
+  haptic('success');
+  alert('Ссылка скопирована!');
+}
+
+function setTheme(t){
+  settings.theme=t;localStorage.setItem('cqr_settings',JSON.stringify(settings));
+  const names={dark:'Тёмная',green:'Неон зелёный',light:'Светлая',cyber:'Cyberpunk'};
+  document.getElementById('cur-theme').textContent=names[t]||t;
+  closeSheet('theme');
+  haptic('light');
+}
+
+function loadProfile(){
+  const u=TG?.initDataUnsafe?.user;
+  if(!u)return;
+  document.getElementById('prof-avatar').textContent=(u.first_name||'?')[0].toUpperCase();
+  document.getElementById('prof-name').textContent=u.first_name||'User';
+  document.getElementById('prof-id').textContent='@'+(u.username||'—')+' | ID: '+u.id;
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  fetchRate();
+  loadSettings();
+  loadProfile();
+  if(settings.autorefresh)setInterval(fetchRate,15000);
+});
 </script>
 </body>
 </html>
